@@ -5,6 +5,7 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+
 [project]
 name = "hopper-vae"
 version = "0.1.0"
@@ -12,11 +13,12 @@ description = "Morphometry and generative modeling of insect wings"
 readme = "README.md"
 license = "MIT"
 authors = [
-    { name="Sassan Ostvar", email="" }
+    { name="Sassan Ostvar", email="sassan.ostvar@gmail.com" }
 ]
 requires-python = ">=3.8"
 
 dependencies = [
+    "pydantic==1.10.4"
 ]
 
 [project.optional-dependencies]
@@ -27,7 +29,7 @@ test = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["hopper-vae"]
+where = ["hopper_vae"]
 
 [tool.pytest.ini_options]
 testpaths = [
