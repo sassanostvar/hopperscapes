@@ -1,0 +1,21 @@
+# core
+numpy<2.0
+matplotlib
+torch
+torchvision
+tqdm
+pandas
+aiohttp
+requests
+torchinfo
+scipy
+scikit-image
+
+
+# configuration / modeling
+pydantic==1.10.4
+
+# testing
+pytest==7.4.0
+coverage
+pytest-cov

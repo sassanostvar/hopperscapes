@@ -1,0 +1,39 @@
+[build-system]
+requires = [
+    "setuptools>=61.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hopper-vae"
+version = "0.1.0"
+description = "Morphometry and generative modeling of insect wings"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name="Sassan Ostvar", email="" }
+]
+requires-python = ">=3.8"
+
+dependencies = [
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==7.4.0",
+    "coverage",
+    "pytest-cov"
+]
+
+[tool.setuptools.packages.find]
+where = ["hopper-vae"]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests"
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+]
