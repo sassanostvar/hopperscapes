@@ -7,38 +7,48 @@ from numpy import uint8
 from typing import Optional, Tuple, Set, Any
 from enum import Enum
 
+
 class WingSide(Enum):
     """
     Enum for wing side.
     """
+
     LEFT = "left"
     RIGHT = "right"
     UNKNOWN = "unknown"
+
 
 class WingType(Enum):
     """
     Enum for wing type.
     """
+
     FOREWING = "forewing"
     HINDWING = "hindwing"
     UNKNOWN = "unknown"
+
 
 class PreserveMedium(Enum):
     """
     Enum for preservation medium.
     """
+
     ETHANOL = "ethanol"
     UNKNOWN = "unknown"
+
 
 class ContainerType(Enum):
     """
     Enum for container type.
     """
+
     TUBE_15ML = "15ml tube"
     TUBE_50ML = "50ml tube"
     UNKNOWN = "unknown"
 
-#TODO: add imaging instrument types and settings
+
+# TODO: add imaging instrument types and settings
+
 
 @dataclass
 class Metadata:
@@ -82,6 +92,7 @@ class Metadata:
         """
         Convert the dataclass to a dictionary and map enum instances to their underlying values.
         """
+
         def convert(value: Any) -> Any:
             # If the value is an Enum, return its value.
             if isinstance(value, Enum):
