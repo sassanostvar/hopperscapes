@@ -10,7 +10,9 @@ requests
 torchinfo
 scipy
 scikit-image
-
+pillow
+torchmetrics 
+tensorboard
 
 # configuration / modeling
 pydantic==1.10.4
