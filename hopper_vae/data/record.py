@@ -2,10 +2,11 @@
     Organize sample collection and transmission light microscopy data
 """
 
-from dataclasses import dataclass, asdict
-from numpy import uint8
-from typing import Optional, Tuple, Set, Any
+from dataclasses import asdict, dataclass
 from enum import Enum
+from typing import Any, Optional, Set, Tuple
+
+from numpy import uint8
 
 
 class WingSide(Enum):
