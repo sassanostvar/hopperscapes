@@ -18,6 +18,9 @@ libigl
 trimesh 
 matplotlib
 sknw
+pyyaml
+SPARQLWrapper
+networkx
 
 # configuration / modeling
 pydantic==1.10.4
