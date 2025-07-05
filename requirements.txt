@@ -21,6 +21,7 @@ sknw
 pyyaml
 SPARQLWrapper
 networkx
+ome-zarr
 
 # configuration / modeling
 pydantic==1.10.4
