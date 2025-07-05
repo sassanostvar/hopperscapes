@@ -263,24 +263,26 @@ class HopperNetCompositeLoss(nn.Module):
     def __init__(self, loss_configs: Dict[str, Dict], device: str = "cpu"):
         #
         for head_name, config in loss_configs.items():
-            for loss_name, loss_params in config.items():
-                if loss_name not in self.loss_function_registry:
-                    raise ValueError(f"Loss function '{loss_name}' is not registered.")
+            for sub_loss_name, loss_params in config.items():
+                if sub_loss_name not in self.loss_function_registry:
+                    raise ValueError(
+                        f"Loss function '{sub_loss_name}' is not registered."
+                    )
 
         super().__init__()
         self.loss_configs = loss_configs
         self.loss_funcs = {}
         for head_name, loss_config in loss_configs.items():
             self.loss_funcs[head_name] = {}
-            for loss_name, loss_specs in loss_config.items():
+            for sub_loss_name, sub_loss_specs in loss_config.items():
                 # Initialize the loss function with parameters
-                if loss_name == "bce":
-                    loss_specs["params"]["pos_weight"] = torch.tensor(
-                        [loss_specs["params"]["pos_weight"]], device=device
+                if sub_loss_name == "bce":
+                    sub_loss_specs["params"]["pos_weight"] = torch.tensor(
+                        [sub_loss_specs["params"]["pos_weight"]], device=device
                     )
-                self.loss_funcs[head_name][loss_name] = self.loss_function_registry[
-                    loss_name
-                ](**loss_specs["params"]).to(device)
+                self.loss_funcs[head_name][sub_loss_name] = self.loss_function_registry[
+                    sub_loss_name
+                ](**sub_loss_specs["params"]).to(device)
 
     def forward(
         self,
@@ -305,21 +307,28 @@ class HopperNetCompositeLoss(nn.Module):
             if weights[head_name] <= 0.0:
                 continue
 
+            target = targets[head_name]
+            clipping_mask = clipping_masks.get(head_name) if clipping_masks else None
+
             # per batch head loss
             head_loss = 0.0
 
-            for loss_name, loss_func in self.loss_funcs[head_name].items():
-                target = targets[head_name]
-                clipping_mask = (
-                    clipping_masks.get(head_name) if clipping_masks else None
-                )
+            for sub_loss_name, sub_loss_func in self.loss_funcs[head_name].items():
+                # TODO: move outside the loop
+                # target = targets[head_name]
+                # clipping_mask = (
+                #     clipping_masks.get(head_name) if clipping_masks else None
+                # )
 
                 # Apply the loss function
-                _weight = self.loss_configs[head_name][loss_name]["weight"]
-                if hasattr(loss_func, "enable_gating") and loss_func.enable_gating:
-                    head_loss += _weight * loss_func(logits, target, clipping_mask)
+                _weight = self.loss_configs[head_name][sub_loss_name]["weight"]
+                if (
+                    hasattr(sub_loss_func, "enable_gating")
+                    and sub_loss_func.enable_gating
+                ):
+                    head_loss += _weight * sub_loss_func(logits, target, clipping_mask)
                 else:
-                    head_loss += _weight * loss_func(logits, target)
+                    head_loss += _weight * sub_loss_func(logits, target)
 
             head_losses[head_name] = head_loss
             total_loss += head_loss * weights[head_name]
