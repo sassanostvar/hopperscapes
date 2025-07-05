@@ -64,7 +64,7 @@ class ImagingInstrument(Enum):
     Enum for imaging instrument.
     """
 
-    AMSCOPE = "AmScope"
+    AMSCOPE = "AMSCOPE-SM-1TSZ-V203"
     LEICA = "Leica"
     UNKNOWN = UNKNOWN
 
@@ -105,7 +105,10 @@ class Metadata:
     image_size          : Optional[Tuple[int, int]] = None
     image_channels      : Optional[Tuple[int, ...]] = None
     image_bit_depth     : Optional[int]             = None
-    image_file_ext      : Optional[str]             = None  
+    image_file_ext      : Optional[str]             = None
+    color_space         : Optional[str]             = None
+    color_profile       : Optional[str]             = None
+    image_resolution    : Optional[Tuple[int, int]] = None
     file_hash           : Optional[str]             = None
 
     def __post_init__(self):
