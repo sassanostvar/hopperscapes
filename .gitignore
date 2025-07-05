@@ -3,6 +3,9 @@
 *.tar.gz
 *.tar
 
+# csv's 
+*.csv
+
 # notebooks
 notebooks/*.ipynb
 
