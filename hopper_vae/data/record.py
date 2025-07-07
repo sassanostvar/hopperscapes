@@ -109,6 +109,7 @@ class Metadata:
     color_space         : Optional[str]             = None
     color_profile       : Optional[str]             = None
     image_resolution    : Optional[Tuple[int, int]] = None
+    pixel_size_um       : Optional[Tuple[float, float]] = None
     file_hash           : Optional[str]             = None
 
     def __post_init__(self):
@@ -186,6 +187,22 @@ class Metadata:
 
         return yaml.dump(self.to_dict(), default_flow_style=False, sort_keys=False)
 
+    @classmethod
+    def from_df_row(cls, df_row) -> "Metadata":
+        """
+        Create a Metadata instance from a pandas DataFrame row.
+        """
+        import pandas as pd
+
+        if not isinstance(df_row, pd.Series):
+            raise TypeError("Input must be a pandas Series.")
+        if df_row.empty:
+            raise ValueError("Input DataFrame row is empty.")
+        # Convert the Series to a dictionary
+        data = df_row.to_dict()
+        # Create a Metadata instance using the dictionary
+        return Metadata(**data)
+        
 @unique
 class ImageFilename(Enum):
     """
