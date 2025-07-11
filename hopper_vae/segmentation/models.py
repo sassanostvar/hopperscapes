@@ -5,7 +5,7 @@ import torch.nn as nn
 import torchinfo
 
 
-class HopperNet(nn.Module):
+class HopperNetLite(nn.Module):
     """
     Multi-head multi-class semantic segmentation of
     wing structure and patterns.
@@ -20,7 +20,9 @@ class HopperNet(nn.Module):
 
         heads = out_channels.keys() if out_channels is not None else None
         if heads is None:
-            raise ValueError("Please provide a set of heads for the HopperNet model.")
+            raise ValueError(
+                "Please provide a set of heads for the HopperNetLite model."
+            )
 
         self.stem = nn.Sequential(
             nn.Conv2d(
@@ -298,7 +300,13 @@ class HopperNet(nn.Module):
 
 
 def main():
-    model = HopperNet()
+    from hopper_vae.configs import TrainingConfigs
+
+    configs = TrainingConfigs()
+    model = HopperNetLite(
+        num_groups=configs.seg_configs.num_groups,
+        out_channels=configs.seg_configs.out_channels,
+    )
     torchinfo.summary(model, input_size=(1, 3, 512, 512))
 
 
