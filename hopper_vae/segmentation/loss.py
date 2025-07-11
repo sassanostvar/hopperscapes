@@ -8,7 +8,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 __all__ = [
     "soft_dice_loss",
     "soft_dice_loss_with_gating",
@@ -33,13 +32,6 @@ def soft_dice_loss(
     Returns:
         Dice loss
     """
-    # probs = torch.sigmoid(logits)
-    # TP = (probs * target).sum(dim=(2, 3))
-    # P = probs.sum(dim=(2, 3))
-    # G = target.sum(dim=(2, 3))
-    # dice = (2.0 * TP + eps) / (P + G + eps)
-    # # return 1.0 - dice
-    # return (1.0 - dice).mean()
     if num_classes > 1:
         one_hot_target = (
             F.one_hot(target, num_classes=num_classes).permute(0, 3, 1, 2).float()
@@ -314,12 +306,6 @@ class HopperNetCompositeLoss(nn.Module):
             head_loss = 0.0
 
             for sub_loss_name, sub_loss_func in self.loss_funcs[head_name].items():
-                # TODO: move outside the loop
-                # target = targets[head_name]
-                # clipping_mask = (
-                #     clipping_masks.get(head_name) if clipping_masks else None
-                # )
-
                 # Apply the loss function
                 _weight = self.loss_configs[head_name][sub_loss_name]["weight"]
                 if (
