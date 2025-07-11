@@ -1,45 +1,47 @@
-# spotted-lanternflies
-Generative modeling of wing morphology, structure, and patterning in spotted lanternflies and other planthoppers.
+# HopperScapes
+Mapping and generative modeling of forewing morphology, structure, and patterning in planthoppers.
 
-## segmentation
-We are interested in extracting from transmission light microscopy images wing outlines, venation structures, spots, and overall pigmentation. We use a multi-head segmentation network with a compact UNet-style encoder-decoder backbone and four logit heads for outline, veins, spots, and ... ?
+## Data
+Data curation for the HopperScapes project is ongoing. 
 
-## repository structure
-    wing-vae/
-    ├── data/
-    │   ├── raw/                   # Original JPEGs, masks, metadata
-    │   ├── processed/             # Cleaned masks, aligned outlines, numpy arrays
-    │   ├── samples/               # Debug samples or small training subsets
-    │   └── metadata/              # JSON, CSV, or pickle of parsed Metadata objects
-    │
-    ├── notebooks/
-    │   ├── 01_explore_data.ipynb          # Visualize raw inputs 
-    │   ├── 02_clean_align_masks.ipynb     # From microSAM to binary outlines
-    │   ├── 03_pilot_train_vae.ipynb       # Early training loop tests
-    │   └── 04_latent_viz_analysis.ipynb   # UMAP, cluster visualizations
-    │
-    ├── src/
-    │   ├── data/
-    │   │   ├── loader.py          # `WingPatternDataset` class
-    │   │   └── preprocess.py      # Alignment, binarization, metadata parsing
-    │   ├── model/
-    │   │   ├── conditional_vae.py # VAE architecture (encoders, decoder)
-    │   │   └── loss.py            # Custom β-VAE loss functions
-    │   ├── train/
-    │   │   └── train_vae.py       # Standalone training script
-    │   ├── utils/
-    │   │   ├── viz.py             # Helper functions for overlay, plotting
-    │   │   └── metrics.py         # Dice, BCE, KL divergence, etc.
-    │   └── config.py              # Hyperparameters and paths
-    │
-    ├── outputs/
-    │   ├── logs/                  # Training logs or tensorboard files
-    │   ├── reconstructions/       # Sample reconstructions
-    │   └── latent_space/          # UMAPs, latent plots
-    │
-    ├── README.md
-    ├── requirements.txt
-    ├── .gitignore
-    └── LICENSE (optional)
+Part of the effort is focused on sampling established Northeast populations of Lycorma delicatula. 
 
-## references
+At the same time, we are using online sources to assemble a pan-hemipteran dataset. 
+
+### Local sources:
+- Morningside Heights, New York City
+- Hudson River Valley, New York
+
+Locally sourced specimens are imaged using transmitted light microscopy. Specimen and image metadata are organized as defined in [hopper_vae.data.record.py](./hopper_vae/data/record.py).
+
+### Web sources:
+
+- Wikipedia Commons
+- iNaturalist
+- FLOW hemiptera databases
+
+## Dataset structure
+Light microscopy data are organized according to the [ome-zarr](https://github.com/ome/ome-zarr-py) specification:
+
+    raw.zarr/
+    └─ specimenID/                
+        └─ forewing/
+            ├─ left/                  
+            │   ├─ rgb/   # (3×Y×X)
+            │   └─ .attrs
+            └─ right/
+                ├─ rgb/
+                └─ .attrs
+
+## Segmentation
+To study wing morphology, microstructure (venation), and pigmentation patterns, we segment the transmitted light microscopy images for wing outlines, veins, spots, and pigmentation domains. 
+
+
+We use a multi-head network with a compact UNet-style encoder-decoder backbone and four logit heads for the respective semantic segmentation tasks [(hopper_vae/segmentation)](hopper_vae/segmentation).
+
+## Roadmap
+- [x] Implement data preprocessing pipeline for microscopy images
+- [x] Implement segmentation model training and evaluation
+- [x] Expand dataset with web-sourced images
+- [ ] Implement data preprocessing pipeline for web-sourced images
+- [ ] Implement generative model training and evaluation
