@@ -1,46 +1,59 @@
-import os
+"""
+    Train the multi-task semantic segmentation model.
+"""
 
+import argparse
+import logging
+import os
 from typing import Dict
 
-import pandas as pd
 import torch
-from torch import nn
-
 import torch.optim as optim
+import torchinfo
+from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 from hopper_vae.configs import TrainingConfigs
-from hopper_vae.segmentation.data_io import WingPatternDataset, hopper_collate_fn
-from hopper_vae.segmentation.models import HopperNet
 from hopper_vae.segmentation import loss
+from hopper_vae.segmentation.data_io import WingPatternDataset, hopper_collate_fn
+from hopper_vae.segmentation.models import HopperNetLite
 
-import torchinfo
+"""
+Checklist: 
+- [ ] add validation
+- [x] add CLI
+- [ ] set up configs yaml
+- [x] test on GPUs
+- [x] add logging
+- [ ] checkpoint logs?
+"""
 
-from tqdm import tqdm
+logger = logging.getLogger("HopperNetTrainingLog")
 
 
 class HopperNetTrainer:
     def __init__(
         self,
         model: nn.Module,
-        freeze_heads: bool = None,
-        train_loader: DataLoader = None,
+        freeze_heads: bool,
+        train_loader: DataLoader,
         # valid_loader: DataLoader = None,
-        criteria: nn.Module = None,
-        total_loss_weights: Dict[str, float] = None,
-        lr: float = 2e-4,
-        weight_decay: float = 0.0,
-        start_epoch: int = 0,
-        num_epochs: int = 100,
-        checkpoint_every: int = 10,
-        log_every: int = 10,
-        clip_gradients: bool = True,
-        max_norm: float = None,
-        dice_scores_to_track: dict = None,
-        threshold_dice_scores: dict = None,
-        device: str = "cpu",
-        savedir: str = None,
+        criteria: nn.Module,
+        total_loss_weights: Dict[str, float],
+        lr: float,
+        weight_decay: float,
+        start_epoch: int,
+        num_epochs: int,
+        checkpoint_every: int,
+        log_every: int,
+        clip_gradients: bool,
+        max_norm: float,
+        dice_scores_to_track: dict,
+        threshold_dice_scores: dict,
+        device: str,
+        savedir: str,
     ):
         if savedir is None:
             raise ValueError("Please provide a valid directory to save the model.")
@@ -87,8 +100,7 @@ class HopperNetTrainer:
             for head_name, freeze in self.freeze_heads.items():
                 if freeze:
                     self.loss_weights[head_name] = 0.0
-                    print(f"Freezing head: {head_name}")
-                    print(f"loss weights: {self.loss_weights}")
+                    logger.info("freezing head: %s", head_name)
                     for p in self.model.heads[head_name].parameters():
                         p.requires_grad = False
 
@@ -102,7 +114,7 @@ class HopperNetTrainer:
     def train(self):
         for i in range(self.num_epochs):
             self.epoch += 1
-            print(f"----- Starting epoch {self.epoch}/{self.num_epochs} -----")
+            logger.info("----- Starting epoch %d/%d -----", self.epoch, self.num_epochs)
 
             self.model.train()
 
@@ -117,10 +129,12 @@ class HopperNetTrainer:
                         continue
 
                     if self.dice_scores[head_name] > threshold:
+                        logger.info("freezing head: %s", head_name)
                         self.loss_weights[head_name] = 0.0
                         for p in self.model.heads[head_name].parameters():
                             p.requires_grad = False
                     else:
+                        logger.info("unfreezing head: %s", head_name)
                         self.loss_weights[head_name] = self.global_loss_weights[
                             head_name
                         ]
@@ -138,11 +152,16 @@ class HopperNetTrainer:
                 self.log_training_performance()
 
             # validate epoch
-            # self.validate_epoch()
+            # self.valid_epoch()
 
     def train_epoch(self):
+        """
+        Run one training epoch.
+        """
         n_batches = 0
-        for sample in tqdm(self.train_loader):
+        for sample in tqdm(
+            self.train_loader, ascii=True, desc="running training epoch..."
+        ):
             images = sample["image"]
             masks = sample["masks"]
 
@@ -161,10 +180,6 @@ class HopperNetTrainer:
             self.total_loss, self.head_losses = self.criteria(
                 inputs=logits,
                 targets=masks,
-                # clipping_masks={
-                #     "veins": masks["wing"],
-                #     # "domains": masks["wing"],
-                # },
                 weights=self.loss_weights,
             )
 
@@ -214,7 +229,10 @@ class HopperNetTrainer:
                         ).item()
                     )
 
-    def validate_epoch(self):
+    def valid_epoch(self):
+        """
+        Run one validation epoch.
+        """
         pass
 
     def save_checkpoint(self):
@@ -236,9 +254,14 @@ class HopperNetTrainer:
             checkoint,
             os.path.join(self.checkpoints_dir, f"checkpoint_epoch_{self.epoch}.pth"),
         )
-        print(f"Checkpoint saved at epoch {self.epoch} to {self.checkpoints_dir}")
+        logger.info(
+            "Checkpoint saved at epoch %d to %s", self.epoch, self.checkpoints_dir
+        )
 
     def log_training_performance(self):
+        """
+        Log training data for dashboard.
+        """
         with torch.no_grad():
             for head_name, head_loss in self.head_losses.items():
                 self.writer.add_scalar(
@@ -263,55 +286,69 @@ class HopperNetTrainer:
 
 def main():
     """
-    apply training loop:
+    Run model training
     """
 
-    # dataset = WingPatternDataset(image_dir="data/raw/train", masks_dir="data/raw/train")
-    dataset = WingPatternDataset(
-        image_dir="data/aug2/train/images", masks_dir="data/aug2/train/masks"
+    args_parser = argparse.ArgumentParser(
+        description="Train semantic segmentation model."
     )
+    args_parser.add_argument("--images_dir", default=None, help="Path to images")
+    args_parser.add_argument("--masks_dir", default=None, help="Path to masks")
+    args_parser.add_argument(
+        "--checkpoint_path", default=None, help="Path to checkpoint to resume."
+    )
+
+    args = args_parser.parse_args()
+
+    images_dir = args.images_dir
+    masks_dir = args.masks_dir
+    checkpoint_path = args.checkpoint_path
+
+    # ---------------------------
+    # ----- Load configs --------
+    # ---------------------------
+    c = TrainingConfigs()
+
+    # ---------------------------
+    # ----- Set up model --------
+    # ---------------------------
+    model = HopperNetLite(
+        num_groups=c.seg_configs.num_groups,  # for GroupNorm
+        out_channels=c.seg_configs.out_channels,
+    )
+
+    checkpoint = None
+    if checkpoint_path is not None:
+        checkpoint = torch.load(checkpoint_path, map_location=c.device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+
+    torchinfo.summary(
+        model,
+    )
+    logger.info("heads: %s", model.heads)
+
+    # ---------------------------
+    # ----- Load dataset --------
+    # ---------------------------
+    dataset = WingPatternDataset(image_dir=images_dir, masks_dir=masks_dir)
 
     train_loader = DataLoader(
         dataset=dataset,
-        batch_size=4,
+        batch_size=c.batch_size,
         collate_fn=hopper_collate_fn,
         shuffle=True,
         drop_last=False,
     )
 
-    print(f"data loader length: {len(train_loader)}")
-    print(f"data loader batch size: {train_loader.batch_size}")
-
-    c = TrainingConfigs()
-    c.model_name = "hopper_net_aug2_test4"
-
-    SAVEDIR = os.path.join(
+    savedir = os.path.join(
         c.savedir,
         c.model_name,
     )
 
-    CRITERIA = loss.HopperNetCompositeLoss(
+    loss_criteria = loss.HopperNetCompositeLoss(
         loss_configs=c.loss_function_configs,
         device=c.device,
     )
-
-    model = HopperNet(
-        num_groups=1,  # for GroupNorm
-        # heads=c.seg_configs.heads,
-        out_channels=c.seg_configs.out_channels,
-    )
-
-    checkpoint = None
-    # checkpoint_path = './outputs/models/hopper_net_aug2_test2/checkpoints/checkpoint_epoch_70.pth'
-    # checkpoint = torch.load(checkpoint_path, map_location=c.device)
-    # model.load_state_dict(
-    #     checkpoiint["model_state_dict"]
-    # )
-
-    torchinfo.summary(
-        model,
-    )
-    print(f"heads: {model.heads}")
 
     start_epoch = 0 if checkpoint is None else checkpoint["epoch"] + 1
 
@@ -319,7 +356,7 @@ def main():
         model=model,
         freeze_heads=c.freeze_heads,
         train_loader=train_loader,
-        criteria=CRITERIA,
+        criteria=loss_criteria,
         total_loss_weights=c.total_loss_weights,
         lr=c.learning_rate,
         weight_decay=c.weight_decay,
@@ -332,7 +369,7 @@ def main():
         dice_scores_to_track=c.dice_scores_to_track,
         threshold_dice_scores=c.dice_thresholds_to_freeze_heads,
         device=c.device,
-        savedir=SAVEDIR,
+        savedir=savedir,
     )
     trainer.train()
 
