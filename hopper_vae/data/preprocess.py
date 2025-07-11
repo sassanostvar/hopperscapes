@@ -2,6 +2,19 @@ import numpy as np
 from scipy.ndimage import rotate
 from skimage.measure import label, regionprops
 from skimage.transform import resize
+from skimage.color import rgb2hsv, hsv2rgb
+
+
+def convert_to_hsv(image):
+    """
+    Convert an RGB image to HSV color space.
+    """
+    if len(image.shape) == 3 and image.shape[2] == 3:  # Check if the image is RGB
+        hsv_image = rgb2hsv(image)
+        return hsv_image
+    else:
+        raise ValueError("Input image must be an RGB image with 3 channels.")
+
 
 
 def resize_image(image, target_side_length=512, anti_aliasing=True):
@@ -88,27 +101,3 @@ def center_wing(masked_gs_img, _mask):
     _shifted_image = np.roll(masked_gs_img, shift, axis=(0, 1))
     _shifted_mask = np.roll(_mask, shift, axis=(0, 1))
     return _shifted_image, _shifted_mask, shift
-
-
-# def pad_to_square(img_gs):
-#     """ "
-#     Pad the image to make it square.
-#     """
-#     w, h = img_gs.shape
-#     # pad image to square shape
-#     if w == h:
-#         return img_gs
-#     elif w > h:
-#         pad = (w - h) // 2
-#         fill_value = img_gs.ravel().mean()
-#         print(f"Padding image with value: {fill_value}")
-#         return np.pad(
-#             img_gs, ((0, 0), (pad, pad)), mode="constant", constant_values=fill_value
-#         )
-#     elif h > w:
-#         pad = (h - w) // 2
-#         fill_value = img_gs.ravel().mean()
-#         print(f"Padding image with value: {fill_value}")
-#         return np.pad(
-#             img_gs, ((pad, pad), (0, 0)), mode="constant", constant_values=fill_value
-#         )

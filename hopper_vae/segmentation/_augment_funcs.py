@@ -6,14 +6,12 @@
 import random
 from typing import Any, Dict, Tuple
 
-from skimage import img_as_float32, img_as_ubyte, color
 import matplotlib.pyplot as plt
-import random
+import numpy as np
+from skimage import color, img_as_float32, img_as_ubyte
+from skimage.filters import gaussian
 
 from hopper_vae.segmentation.data_io import WingPatternDataset
-
-import numpy as np
-from skimage.filters import gaussian
 
 
 def random_blur_whole_image(

@@ -11,14 +11,21 @@ from hopper_vae import configs
 from hopper_vae.data import preprocess
 
 _global_configs = configs.SegmentationConfig()
+
+# model configs
 OUT_CHANNELS = _global_configs.out_channels
+#
 HEADS = set(OUT_CHANNELS.keys())
+#
 MULTI_CLASS_HEADS = {
     head_name
     for head_name, num_channels in _global_configs.out_channels.items()
     if num_channels > 1
 }
+
+# dataset configs
 SQUARE_IMAGE_SIZE = _global_configs.square_image_size
+CONVERT_TO_HSV = _global_configs.convert_to_hsv
 
 
 def hopper_collate_fn(batch):
@@ -140,9 +147,7 @@ class WingPatternDataset(Dataset):
 
         masks = {}
         for mask_path in masks_glob:
-            mask_id = (
-                os.path.basename(os.path.dirname(mask_path)).lower()
-            )
+            mask_id = os.path.basename(os.path.dirname(mask_path)).lower()
             if mask_id in HEADS:
                 masks[mask_id] = os.path.relpath(
                     mask_path, mask_dir
@@ -169,6 +174,10 @@ class WingPatternDataset(Dataset):
 
         image = imread(image_path)
         image = image.astype(float) / 255.0
+
+        # convert to HSV
+        if CONVERT_TO_HSV:
+            image = preprocess.convert_to_hsv(image)
 
         masks = {}
         for mask_id, mask_path in masks_paths.items():

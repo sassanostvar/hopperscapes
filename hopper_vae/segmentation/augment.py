@@ -1,10 +1,14 @@
+import random
 from pathlib import Path
-import numpy as np, imageio.v2 as imageio, torch, random
-from tqdm import tqdm
-from typing import Union, Optional, Callable, Mapping
+from typing import Callable, Mapping, Optional, Union
 
+import imageio.v2 as imageio
+import numpy as np
+import torch
+from tqdm import tqdm
+
+from hopper_vae.segmentation._augment_funcs import random_aug, random_blur_whole_image
 from hopper_vae.segmentation.data_io import WingPatternDataset
-from hopper_vae.segmentation._augment_funcs import random_blur_whole_image, random_aug
 
 
 def export_augmented_dataset(
