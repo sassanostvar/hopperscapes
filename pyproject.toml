@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "hopper-vae"
+name = "HopperScapes"
 version = "0.1.0"
 description = "Morphometry and generative modeling of insect wings"
 readme = "README.md"
