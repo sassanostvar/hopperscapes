@@ -23,6 +23,8 @@ SPARQLWrapper
 networkx
 ome-zarr
 dask[complete]
+imagecodecs
+tifffile
 
 # configuration / modeling
 pydantic==1.10.4
