@@ -126,7 +126,7 @@ def show_grid(imgs, ncols=6, figsize=6):
 
 
 def main():
-    dataset = WingPatternDataset(image_dir="data/raw/train", masks_dir="data/raw/train")
+    dataset = WingPatternDataset(image_dir="data/raw/train/images", masks_dir="data/raw/train/masks")
     print(f"dataset length: {len(dataset)}")
 
     show_grid(

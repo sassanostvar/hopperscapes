@@ -7,8 +7,20 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from hopper_vae.segmentation._augment_funcs import random_aug, random_blur_whole_image
+from hopper_vae.segmentation.augment._augment_funcs import random_aug, random_blur_whole_image
 from hopper_vae.segmentation.data_io import WingPatternDataset
+
+import argparse
+
+from dataclasses import dataclass
+
+
+@dataclass
+class AugmentConfigs:
+    random_blur_prob: float = 0.4
+    random_blur_sigma_min: float = 1.0
+    random_blur_sigma_max: float = 3.0
+    num_augment_per_image: int = 10
 
 
 def export_augmented_dataset(
@@ -21,8 +33,8 @@ def export_augmented_dataset(
     """
     Save augmented copies of images **and every mask in sample['masks']**.
 
-    - Images ➜   <out_root>/images/{idx:05d}_aug{k}.png
-    - Masks  ➜   <out_root>/masks/<mask_key>/{idx:05d}_aug{k}.tif
+    - Images:  <out_root>/images/{idx:05d}_aug{k}.png
+    - Masks:   <out_root>/masks/<mask_key>/{idx:05d}_aug{k}.tif
     """
     if seed is not None:
         random.seed(seed)
@@ -72,18 +84,45 @@ def export_augmented_dataset(
 
 # ---------------- quick CLI / script usage ----------------
 if __name__ == "__main__":
+    arg_parser = argparse.ArgumentParser(description="Create an augmented dataset.")
+
+    arg_parser.add_argument("--images_dir", default=None, help="path to raw images.")
+    arg_parser.add_argument(
+        "--masks_dir", default=None, help="path to segmentation masks."
+    )
+    arg_parser.add_argument(
+        "--savedir", default=None, help="Path to save the augmented dataset."
+    )
+
+    args = arg_parser.parse_args()
+
+    path_to_images = args.images_dir
+    path_to_masks = args.masks_dir
+    savedir = args.savedir
+
+    # configs
+    aug_configs = AugmentConfigs()
 
     def composite_aug(img):
+        # apply base transforms
         img = random_aug(img)
-        if np.random.rand() < 0.4:
-            img = random_blur_whole_image(img, sigma_range=(1.0, 3.0))
+        # apply blur
+        if np.random.rand() < aug_configs.random_blur_prob:
+            img = random_blur_whole_image(
+                img,
+                sigma_range=(
+                    aug_configs.random_blur_sigma_min,
+                    aug_configs.random_blur_sigma_max,
+                ),
+            )
         return img
 
-    ds = WingPatternDataset("data/raw/train/images", "data/raw/train/masks")
+    ds = WingPatternDataset(path_to_images, path_to_masks)
+
     export_augmented_dataset(
         ds,
-        out_root="data/aug2/train",
-        n_aug_per_img=10,
+        out_root=savedir,
+        n_aug_per_img=aug_configs.num_augment_per_image,
         aug_fn=composite_aug,
         # keep_masks=True,
     )
