@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 from hopper_vae import configs
 from hopper_vae.data import preprocess
 
-_global_configs = configs.SegmentationConfig()
+_global_configs = configs.SegmentationConfigs()
 
 # model configs
 OUT_CHANNELS = _global_configs.out_channels
@@ -68,6 +68,8 @@ class ResizeToLongestSide:
         img_arr = preprocess.resize_image(
             img_arr,
             target_side_length=self.img_side_length,
+            order=0,
+            preserve_range=True,
             anti_aliasing=anti_aliasing,
         )
         img_arr = preprocess.make_square(img_arr)
