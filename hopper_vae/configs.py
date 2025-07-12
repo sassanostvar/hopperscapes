@@ -1,13 +1,16 @@
 from dataclasses import dataclass, field
 
 
+
 @dataclass
-class SegmentationConfig:
+class SegmentationConfigs:
     """
     Configuration for the multi-head segmentation model.
     """
 
-    square_image_size = 512
+    square_image_size = 1024
+
+    convert_to_hsv = True
 
     out_channels = {
         "wing": 1,
@@ -16,6 +19,8 @@ class SegmentationConfig:
         "domains": 3,  # 2 + background
         # "bricks": 1,
     }
+
+    num_groups = 1 # for GroupNorm
 
 
 @dataclass
@@ -27,7 +32,7 @@ class TrainingConfigs:
     model_name: str = "test_model"
     savedir: str = "./outputs/models"
     device: str = "cpu"
-    seg_configs: SegmentationConfig = SegmentationConfig()
+    seg_configs: SegmentationConfigs = SegmentationConfigs()
     batch_size: int = 4
     num_workers: int = 4
     epochs: int = 200
@@ -65,7 +70,7 @@ class TrainingConfigs:
             "soft_dice": {"weight": 1.0, "params": {}},
         },
         "veins": {
-            "bce": {"weight": 0.5, "params": {"pos_weight": 10.0}},
+            "bce": {"weight": 0.5, "params": {"pos_weight": 100.0}},
             "soft_dice": {"weight": 2.0, "params": {}},
             "cldice": {"weight": 2.0, "params": {}},
         },
