@@ -1,4 +1,4 @@
-# HopperScapes
+# HOPPERSCAPES
 Mapping and representation learning of forewing morphology and patterning in planthoppers.
 
 <p align="center">
@@ -6,23 +6,7 @@ Mapping and representation learning of forewing morphology and patterning in pla
 </p>
 
 ## Data
-Data curation for the HopperScapes project is ongoing. 
-
-Part of the effort is focused on sampling established Northeast populations of Lycorma delicatula. 
-
-At the same time, we are using online sources to assemble a pan-hemipteran dataset. 
-
-### Local sources:
-- Morningside Heights, New York City
-- Hudson River Valley, New York
-
-Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and image metadata are organized as defined in [hopper_vae.data.record.py](./hopper_vae/data/record.py).
-
-### Web sources:
-
-- Wikipedia Commons
-- iNaturalist
-- FLOW hemiptera databases
+Data curation for the HopperScapes project is ongoing. Part of the effort is focused on sampling established Northeast populations of _Lycorma delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are organized as specified in [hopper_vae.data.record.py](./hopper_vae/data/record.py).
 
 ## Dataset structure
 Light microscopy data are organized according to the [ome-zarr](https://github.com/ome/ome-zarr-py) specification:
@@ -36,6 +20,17 @@ Light microscopy data are organized according to the [ome-zarr](https://github.c
             └─ right/
                 ├─ rgb/
                 └─ .attrs
+
+## Data Sources
+### Local sources:
+- Morningside Heights, New York City
+- Hudson River Valley, New York
+
+### Web sources:
+
+- Wikipedia Commons
+- iNaturalist
+- FLOW hemiptera databases
 
 ## Segmentation
 To study wing morphology, microstructure (venation), and pigmentation patterns, we segment the transmitted light microscopy images for wing outlines, veins, spots, and pigmentation domains. 
