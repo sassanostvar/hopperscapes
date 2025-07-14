@@ -1,18 +1,30 @@
+"""
+Prepare augmented datasets and write to disk.
+"""
+
+import argparse
 import random
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping, Optional, Union
+from typing import Callable, Mapping, Optional, Tuple, Union
 
 import imageio.v2 as imageio
 import numpy as np
 import torch
 from tqdm import tqdm
 
-from hopper_vae.segmentation.augment._augment_funcs import random_aug, random_blur_whole_image
+from hopper_vae.segmentation.augment._augment_funcs import (
+    random_aug,
+    random_blur_whole_image,
+)
 from hopper_vae.segmentation.data_io import WingPatternDataset
 
-import argparse
-
-from dataclasses import dataclass
+"""
+Checklist:
+- [ ] implement tile-wise blur
+- [ ] implement focal blur
+- [ ] implement tile-wise color inversion
+"""
 
 
 @dataclass
@@ -21,6 +33,11 @@ class AugmentConfigs:
     random_blur_sigma_min: float = 1.0
     random_blur_sigma_max: float = 3.0
     num_augment_per_image: int = 10
+    p_brightness: float = 0.5
+    brightness_range: Tuple[float] = (0.6, 1.4)
+    p_color_saturation: float = 0.5
+    color_saturation_range: Tuple[float] = (0.6, 1.4)
+    p_channel_shuffle: float = 0.3
 
 
 def export_augmented_dataset(
@@ -105,7 +122,14 @@ if __name__ == "__main__":
 
     def composite_aug(img):
         # apply base transforms
-        img = random_aug(img)
+        img = random_aug(
+            img,
+            p_bright=aug_configs.p_brightness,
+            brightness_range=aug_configs.brightness_range,
+            p_color=aug_configs.p_color_saturation,
+            color_saturation_range=aug_configs.color_saturation_range,
+            p_shuffle=aug_configs.p_channel_shuffle,
+        )
         # apply blur
         if np.random.rand() < aug_configs.random_blur_prob:
             img = random_blur_whole_image(
@@ -124,5 +148,4 @@ if __name__ == "__main__":
         out_root=savedir,
         n_aug_per_img=aug_configs.num_augment_per_image,
         aug_fn=composite_aug,
-        # keep_masks=True,
     )

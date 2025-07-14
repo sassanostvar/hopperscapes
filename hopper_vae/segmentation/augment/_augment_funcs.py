@@ -1,6 +1,12 @@
 """
-    Methods for augmenting transmission light microscopy images 
-    of insec wings.
+    Custom methods for augmenting transmission light microscopy images 
+    of insect wings. Currently supports: 
+
+    - uniform gaussian blur applied to the entire image
+    - uniform gaussian blur applied to a randomly selected tile
+    - brightness scaling
+    - color saturation scaling (applied to HSV color space representation)
+    - RGB channels shuffle
 """
 
 import random
@@ -11,7 +17,7 @@ import numpy as np
 from skimage import color, img_as_float32, img_as_ubyte
 from skimage.filters import gaussian
 
-from hopper_vae.segmentation.data_io import WingPatternDataset
+from hopper_vae.segmentation.dataset import WingPatternDataset
 
 
 def random_blur_whole_image(
@@ -33,6 +39,7 @@ def random_blur_whole_image(
     return gaussian(image, sigma=sigma, channel_axis=channel_axis)
 
 
+# TODO: specify tile size
 def random_blur_tile(
     image: np.ndarray,
     sigma_range: Tuple[float, float] = (0.5, 2.0),
@@ -44,9 +51,13 @@ def random_blur_tile(
     Args:
         image (np.ndarray): Input image.
         sigma_range (Tuple[float, float]): Range of sigma values for Gaussian blur.
+        channel_axis (int): channel axis index.
 
     Returns:
-        np.ndarray: Blurred tile of the image.
+        Dictionary:
+        'sigma': (float): sigma value used
+        'tile_bounds': (Tuple[int]): tile bounds
+        'image': (np.ndarray): Blurred tile of the image.
     """
     h, w = image.shape[:2]
     x1 = random.randint(0, w - 1)
@@ -103,11 +114,22 @@ def shuffle_channels(img):
 
 
 # ---------- one-shot random recipe ----------
-def random_aug(img, p_bright=0.5, p_color=0.5, p_shuffle=0.3):
+def random_aug(
+    img: np.ndarray,
+    p_bright: float = 0.5,
+    brightness_range: Tuple[float] = (0.6, 1.4),
+    p_color: float = 0.5,
+    color_saturation_range: Tuple[float] = (0.6, 1.4),
+    p_shuffle: float = 0.3,
+):
     if random.random() < p_bright:
-        img = adjust_brightness(img, random.uniform(0.6, 1.4))
+        img = adjust_brightness(
+            img, random.uniform(brightness_range[0], brightness_range[1])
+        )
     if random.random() < p_color:
-        img = adjust_color(img, random.uniform(0.6, 1.4))
+        img = adjust_color(
+            img, random.uniform(color_saturation_range[0], color_saturation_range[1])
+        )
     if random.random() < p_shuffle:
         img = shuffle_channels(img)
     return img
@@ -126,15 +148,17 @@ def show_grid(imgs, ncols=6, figsize=6):
 
 
 def main():
-    dataset = WingPatternDataset(image_dir="data/raw/train/images", masks_dir="data/raw/train/masks")
+    dataset = WingPatternDataset(
+        image_dir="data/raw/train/images", masks_dir="data/raw/train/masks"
+    )
     print(f"dataset length: {len(dataset)}")
 
     show_grid(
         [
             random_aug(dataset[i]["image"].permute(1, 2, 0).cpu().numpy())
-            for i in range(12)
+            for i in range(10)
         ],
-        ncols=3,
+        ncols=5,
         figsize=6,
     )
 
