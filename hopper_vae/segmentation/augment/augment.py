@@ -1,5 +1,6 @@
 """
 Prepare augmented datasets and write to disk.
+(See _augment_funcs for details of transforms.)
 """
 
 import argparse
@@ -17,7 +18,7 @@ from hopper_vae.segmentation.augment._augment_funcs import (
     random_aug,
     random_blur_whole_image,
 )
-from hopper_vae.segmentation.data_io import WingPatternDataset
+from hopper_vae.segmentation.dataset import WingPatternDataset
 
 """
 Checklist:
@@ -120,23 +121,26 @@ if __name__ == "__main__":
     # configs
     aug_configs = AugmentConfigs()
 
-    def composite_aug(img):
+    # TODO: consider moving the inline function out of main
+    def composite_aug(
+        img: np.ndarray, _configs: AugmentConfigs = aug_configs
+    ) -> np.ndarray:
         # apply base transforms
         img = random_aug(
             img,
-            p_bright=aug_configs.p_brightness,
-            brightness_range=aug_configs.brightness_range,
-            p_color=aug_configs.p_color_saturation,
-            color_saturation_range=aug_configs.color_saturation_range,
-            p_shuffle=aug_configs.p_channel_shuffle,
+            p_bright=_configs.p_brightness,
+            brightness_range=_configs.brightness_range,
+            p_color=_configs.p_color_saturation,
+            color_saturation_range=_configs.color_saturation_range,
+            p_shuffle=_configs.p_channel_shuffle,
         )
         # apply blur
-        if np.random.rand() < aug_configs.random_blur_prob:
+        if np.random.rand() < _configs.random_blur_prob:
             img = random_blur_whole_image(
                 img,
                 sigma_range=(
-                    aug_configs.random_blur_sigma_min,
-                    aug_configs.random_blur_sigma_max,
+                    _configs.random_blur_sigma_min,
+                    _configs.random_blur_sigma_max,
                 ),
             )
         return img
