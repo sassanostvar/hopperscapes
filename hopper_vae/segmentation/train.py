@@ -17,7 +17,7 @@ from tqdm import tqdm
 
 from hopper_vae.configs import SegmentationModelConfigs
 from hopper_vae.segmentation import loss
-from hopper_vae.segmentation.data_io import WingPatternDataset, hopper_collate_fn
+from hopper_vae.segmentation.dataset import WingPatternDataset, hopper_collate_fn
 from hopper_vae.segmentation.models import HopperNetLite
 
 """
