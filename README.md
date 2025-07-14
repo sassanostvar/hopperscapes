@@ -1,7 +1,7 @@
 # HOPPERSCAPES
 
 ![Tests](https://img.shields.io/badge/tests-pytest-green)
-![Coverage](https://img.shields.io/badge/coverage-31%25-red)
+![Coverage](https://img.shields.io/badge/coverage-72%25-yellow)
 
 ## Overview
 
@@ -11,7 +11,7 @@ Mapping and representation learning of forewing morphology and patterning in pla
 <img src="assets/wings.gif", style="max-width: 300px;">
 </p>
 
-Planthoppers show remarkably diverse forewing structure and patterning. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an ongoing effort toward representation learning of the underlying _morpho-chromosapce_.
+Planthoppers have evolved remarkably diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an ongoing effort toward representation learning of the underlying _morpho-chromosapce_.
 
 The current repository includes components of an end-to-end pipeline for record management, image pre-processing, semantic segmentation, and morphometry.
 
@@ -47,6 +47,8 @@ Initial release of the first light microscopy dataset is planned for Summer 2025
     ├── notebooks
     ├── scripts
     └── tests
+
+See the respective READMEs for details.
 
 ## Segmentation
 To study wing morphology, microstructure (venation), and pigmentation patterns, we segment the transmitted light microscopy images for wing outlines, veins, spots, and pigmentation domains. 
