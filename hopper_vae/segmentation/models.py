@@ -300,12 +300,12 @@ class HopperNetLite(nn.Module):
 
 
 def main():
-    from hopper_vae.configs import TrainingConfigs
+    from hopper_vae.configs import SegmentationModelConfigs
 
-    configs = TrainingConfigs()
+    configs = SegmentationModelConfigs()
     model = HopperNetLite(
-        num_groups=configs.seg_configs.num_groups,
-        out_channels=configs.seg_configs.out_channels,
+        num_groups=configs.num_groups,
+        out_channels=configs.out_channels,
     )
     torchinfo.summary(model, input_size=(1, 3, 512, 512))
 

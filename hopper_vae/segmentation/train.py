@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from hopper_vae.configs import TrainingConfigs
+from hopper_vae.configs import SegmentationModelConfigs
 from hopper_vae.segmentation import loss
 from hopper_vae.segmentation.data_io import WingPatternDataset, hopper_collate_fn
 from hopper_vae.segmentation.models import HopperNetLite
@@ -307,14 +307,14 @@ def main():
     # ---------------------------
     # ----- Load configs --------
     # ---------------------------
-    c = TrainingConfigs()
+    c = SegmentationModelConfigs()
 
     # ---------------------------
     # ----- Set up model --------
     # ---------------------------
     model = HopperNetLite(
-        num_groups=c.seg_configs.num_groups,  # for GroupNorm
-        out_channels=c.seg_configs.out_channels,
+        num_groups=c.num_groups,  # for GroupNorm
+        out_channels=c.out_channels,
     )
 
     checkpoint = None
