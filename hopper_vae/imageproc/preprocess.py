@@ -16,11 +16,13 @@ def convert_to_hsv(image):
         raise ValueError("Input image must be an RGB image with 3 channels.")
 
 
-
-def resize_image(image, target_side_length=512, anti_aliasing=True):
+def resize_image(
+    image, target_side_length, order=0, preserve_range=True, anti_aliasing=True
+):
     """
     Resize the image to the specified height and width.
     """
+    is_binary = isinstance(image.dtype, bool)
     h, w = image.shape[0], image.shape[1]
     if h > w:
         new_h = target_side_length
@@ -29,8 +31,17 @@ def resize_image(image, target_side_length=512, anti_aliasing=True):
         new_w = target_side_length
         new_h = int(h * (target_side_length / w))
     resized_image = resize(
-        image, (new_h, new_w), order=0, preserve_range=True, anti_aliasing=anti_aliasing
+        image,
+        (new_h, new_w),
+        order=order,
+        preserve_range=preserve_range,
+        anti_aliasing=anti_aliasing,
     )
+    
+    # re-binarize
+    if is_binary:
+        resized_image = resized_image>0
+
     return resized_image
 
 
