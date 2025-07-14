@@ -1,7 +1,5 @@
 import pytest
 
-pytest.mark.unit
-
-
+@pytest.mark.unit
 def test_minimal():
     pass

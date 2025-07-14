@@ -19,7 +19,7 @@ TEST_VEINS_MASK = (
     / "LD_F_TC_02024_0024_left_forewing_seg_veins.tif"
 )
 
-
+@pytest.mark.unit
 def test_soft_skel(debug=False):
     """
     Apply soft skeletonize to a sample veins seg mask.

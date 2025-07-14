@@ -19,7 +19,7 @@ SAVEDIR = (
 )
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 def test_train_pipeline(debug=False):
     """
     Test the train loader.
