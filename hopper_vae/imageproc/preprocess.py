@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.ndimage import rotate
-from skimage.measure import label, regionprops
 from skimage.transform import resize
 from skimage.color import rgb2hsv, hsv2rgb
 
@@ -79,6 +78,8 @@ def isolate_wing_mask(prediction):
     """
     Isolate the largest connected component in the binary mask.
     """
+    from skimage.measure import label, regionprops
+
     labeled = label(prediction > 0)
     regions = regionprops(labeled)
 
@@ -86,29 +87,33 @@ def isolate_wing_mask(prediction):
         raise ValueError("No regions found in the mask.")
 
     largest_region = max(regions, key=lambda r: r.area)
-    return regions == largest_region.label
+    return labeled == largest_region.label
 
 
-def align_wing_with_yaxis(masked_gs_img, _mask):
+def align_wing_with_yaxis(masked_gs_img, mask):
     """
     Align the wing with the y-axis by rotating the image and mask.
     """
-    angle = np.rad2deg(regionprops(label(_mask))[0].orientation)
+    from skimage.measure import label, regionprops
+
+    angle = np.rad2deg(regionprops(label(mask))[0].orientation)
     aligned_gs_img = rotate(masked_gs_img, -angle, reshape=False)
-    aligned_mask = rotate(_mask, -angle, reshape=False)
+    aligned_mask = rotate(mask, -angle, reshape=False)
     return aligned_gs_img, aligned_mask, angle
 
 
-def center_wing(masked_gs_img, _mask):
+def center_wing(masked_gs_img, mask):
     """
     Center the wing in the image.
     """
-    mask_centroid = regionprops(label(_mask))[0].centroid
+    from skimage.measure import label, regionprops
+
+    mask_centroid = regionprops(label(mask))[0].centroid
     mask_centroid_int = [int(mask_centroid[0]), int(mask_centroid[1])]
     shift = (
         int(masked_gs_img.shape[0] / 2) - mask_centroid_int[0],
         int(masked_gs_img.shape[1] / 2) - mask_centroid_int[1],
     )
     _shifted_image = np.roll(masked_gs_img, shift, axis=(0, 1))
-    _shifted_mask = np.roll(_mask, shift, axis=(0, 1))
+    _shifted_mask = np.roll(mask, shift, axis=(0, 1))
     return _shifted_image, _shifted_mask, shift
