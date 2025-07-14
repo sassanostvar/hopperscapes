@@ -1,17 +1,21 @@
+"""
+Evaluate pretrained checkpoint on sample data.
+"""
+
 import sys
 
-sys.path.append("../hopper-vae")
+sys.path.append("../hopperscapes")
 
 
+import argparse
 import os
-import torch
-
-from hopper_vae.segmentation.data_io import WingPatternDataset
-from hopper_vae.segmentation.models import HopperNet
-
-import torchinfo
 
 import matplotlib.pyplot as plt
+import torch
+import torchinfo
+
+from hopper_vae.segmentation.dataset import WingPatternDataset
+from hopper_vae.segmentation.models import HopperNetLite
 
 # change font sizes for all text, axis labels, etc.
 plt.rcParams.update({"font.size": 5})
@@ -21,41 +25,14 @@ plt.rcParams.update({"xtick.labelsize": 5})
 plt.rcParams.update({"ytick.labelsize": 5})
 
 
-def main(checkpoint_path: str):
-    # Load the dataset
-    dataset = WingPatternDataset(
-        image_dir="data/aug/train/images", masks_dir="data/aug/train/masks"
-    )
-    print(f"dataset length: {len(dataset)}")
-
-    # load the checkpoint
-    checkpoint = torch.load(checkpoint_path, map_location=torch.device("cpu"))
-    heads = checkpoint["heads"]
-    out_channels = {head: 1 for head in heads}
-    out_channels["domains"] = 3  # shouldn't hand-code here..
-
-    # Load the model
-    model = HopperNet(
-        num_groups=1,  # for GroupNorm
-        out_channels=out_channels,  # use the heads from the checkpoint
-    )
-    model.load_state_dict(torch.load(checkpoint_path)["model_state_dict"])
-
-    # evaluate the model on the dataset
-    model.eval()
-    with torch.no_grad():
-        sample = dataset[13]
-        image = sample["image"].unsqueeze(0)
-        masks = sample["masks"]
-        output = model(image)
-
+def visualize_predictions(sample, masks, output):
+    """
+    Plot ground truth masks and predictions.
+    """
     fig, ax = plt.subplots(nrows=2, ncols=len(masks), figsize=(4, 2))
 
     import numpy as np
-    from scipy.ndimage import distance_transform_edt
-    from skimage.filters import gaussian
-    from skimage.exposure import rescale_intensity
-    from skimage.measure import label, regionprops, find_contours
+    from skimage.measure import find_contours, label, regionprops
 
     # show image
     for axi in ax.flatten():
@@ -71,7 +48,6 @@ def main(checkpoint_path: str):
     }
 
     # show ground truth masks
-    # for idx, key in enumerate(sample["masks"]):
     for idx, key in enumerate(keys):
         _mask = sample["masks"][key].squeeze().numpy()
         color = np.concatenate([rgb_colors[key], np.array([0.6])], axis=0)
@@ -121,7 +97,7 @@ def main(checkpoint_path: str):
                     contours = find_contours(class_mask_binary)
                     for contour in contours:
                         ax[1, idx].plot(
-                            contour[:, 1], contour[:, 0], linewidth=0.5, color="blue"
+                            contour[:, 1], contour[:, 0], linewidth=0.5, color="w"
                         )
 
             ax[1, idx].imshow(
@@ -139,35 +115,87 @@ def main(checkpoint_path: str):
             ax[1, idx].imshow(mask_image)
             contours = find_contours(mask)
             for contour in contours:
-                ax[1, idx].plot(
-                    contour[:, 1], contour[:, 0], linewidth=0.5, color="blue"
-                )
+                ax[1, idx].plot(contour[:, 1], contour[:, 0], linewidth=0.5, color="w")
 
     fig.tight_layout(pad=0.0)
-
-    from skimage.measure import label, regionprops
-
-    print(
-        f'number of spots: {len(regionprops(label(sample["masks"]["spots"].squeeze().numpy())))}'
-    )
 
     return fig, ax
 
 
-if __name__ == "__main__":
-    import glob
-    import os
-    from tqdm import tqdm
+def main():
+    """
+    Apply pre-trained checkpoint to sample data and visualize the predictions and groud truths.
+    """
+    arg_parser = argparse.ArgumentParser(
+        description="Apply semantic segmentation model to sample data"
+    )
+    arg_parser.add_argument("--images-dir", default=None, help="Path to images.")
+    arg_parser.add_argument(
+        "--masks-dir",
+        default=None,
+        help="Path to segmentation masks.",
+    )
+    arg_parser.add_argument(
+        "--checkpoint", default=None, help="Path to model checkpoint."
+    )
+    arg_parser.add_argument(
+        "--savedir",
+        default=None,
+        help="Path to save the output images: <savedir>/plots",
+    )
+    arg_parser.add_argument(
+        "--device", default="cpu", help="Device to use during inference."
+    )
+    arg_parser.add_argument(
+        "--record-index",
+        default=0,
+        type=int,
+        help="Index pointing to the record to use as sample data.",
+    )
 
-    model_dir = "./outputs/models/hopper_net_aug2_test4"
-    checkpoints_dir = os.path.join(model_dir, "checkpoints")
-    all_checkpoints = sorted(glob.glob(os.path.join(checkpoints_dir, "*.pth")))
+    args = arg_parser.parse_args()
 
-    plots_savedir = os.path.join(model_dir, "plots")
+    images_dir = args.images_dir
+    masks_dir = args.masks_dir
+    checkpoint_path = args.checkpoint
+    savedir = args.savedir
+    device = args.device
+    record_idx = args.record_index
+
+    # Load the dataset
+    dataset = WingPatternDataset(image_dir=images_dir, masks_dir=masks_dir)
+    print(f"dataset length: {len(dataset)}")
+
+    # load the checkpoint
+    checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
+    heads = checkpoint["heads"]
+    out_channels = {head: 1 for head in heads}
+    out_channels["domains"] = 3  # shouldn't hand-code here..
+
+    # Load the model
+    model = HopperNetLite(
+        num_groups=1,  # for GroupNorm
+        out_channels=out_channels,  # use the heads from the checkpoint
+    )
+    model.load_state_dict(torch.load(checkpoint_path)["model_state_dict"])
+
+    # evaluate the model on the dataset
+    model.eval()
+    with torch.no_grad():
+        sample = dataset[record_idx]
+        image = sample["image"].unsqueeze(0)
+        masks = sample["masks"]
+        output = model(image)
+
+    # plot the predictions and ground truths
+    fig, ax = visualize_predictions(sample, masks, output)
+
+    # save output to file
+    plots_savedir = os.path.join(savedir, "plots")
     os.makedirs(plots_savedir, exist_ok=True)
+    checkpoint_name = os.path.basename(checkpoint_path).replace(".pth", ".png")
+    fig.savefig(os.path.join(plots_savedir, checkpoint_name), dpi=300)
 
-    for checkpoint_path in tqdm(all_checkpoints):
-        print(f"Evaluating {checkpoint_path}")
-        fig, ax = main(checkpoint_path)
-        checkpoint_name = os.path.basename(checkpoint_path).replace(".pth", ".png")
-        fig.savefig(os.path.join(plots_savedir, checkpoint_name), dpi=300)
+
+if __name__ == "__main__":
+    main()
