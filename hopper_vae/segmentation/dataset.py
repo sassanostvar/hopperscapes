@@ -8,29 +8,16 @@ from skimage.io import imread
 from torch.utils.data import Dataset
 
 from hopper_vae import configs
-from hopper_vae.data import preprocess
+from hopper_vae.imageproc import preprocess
 
-_global_configs = configs.SegmentationConfigs()
+_GLOBAL_CONFIGS = configs.SegmentationModelConfigs()
 
-# model configs
-OUT_CHANNELS = _global_configs.out_channels
-#
-HEADS = set(OUT_CHANNELS.keys())
-#
-MULTI_CLASS_HEADS = {
-    head_name
-    for head_name, num_channels in _global_configs.out_channels.items()
-    if num_channels > 1
-}
-
-# dataset configs
-SQUARE_IMAGE_SIZE = _global_configs.square_image_size
-CONVERT_TO_HSV = _global_configs.convert_to_hsv
+SQUARE_IMAGE_DIMS = _GLOBAL_CONFIGS.square_image_size
 
 
 def hopper_collate_fn(batch):
     """
-    custom collate function to deal with the nested masks dicts
+    Custom collate function to work with the nested masks dictionary
     """
     images = []
     masks_dicts = []
@@ -55,16 +42,24 @@ def hopper_collate_fn(batch):
 
 
 class ResizeToLongestSide:
-    def __init__(self, target=SQUARE_IMAGE_SIZE):
-        self.img_side_length = target
+    """
+    Resize image to given dimensions and pad to make square.
+    """
+
+    def __init__(self, target_image_dims: Tuple = SQUARE_IMAGE_DIMS):
+        self.img_side_length = target_image_dims
 
     def __call__(self, tensor: torch.Tensor, anti_aliasing=True) -> torch.Tensor:
+        # no need to transform images with the right dimensions
         if tensor[-2:].shape == (self.img_side_length, self.img_side_length):
             return tensor
-        #
 
+        # reorder the channels from (C, H, W) to (H, W, C)
         img_arr = tensor.permute(1, 2, 0).cpu().numpy()
 
+        # TODO: do we need to change the interpolation order
+        # for images vs. masks? also, we should consider re-binarizing
+        # the masks after resizing
         img_arr = preprocess.resize_image(
             img_arr,
             target_side_length=self.img_side_length,
@@ -74,6 +69,7 @@ class ResizeToLongestSide:
         )
         img_arr = preprocess.make_square(img_arr)
 
+        # reorder the channels from (H, W, C) to (C, H, W)
         img_tensor = torch.from_numpy(img_arr).permute(2, 0, 1).float()
         return img_tensor
 
@@ -82,7 +78,7 @@ class SharedTransform:
     def __init__(self, base_transform):
         self.base_transform = base_transform
 
-    def __call__(self, sample: Dict[str, ArrayLike]) -> Dict[str, ArrayLike]:
+    def __call__(self, sample: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         img = sample["image"]
         masks = sample["masks"]
 
@@ -103,7 +99,7 @@ class WingPatternDataset(Dataset):
         masks_dir: str,
         # metadata_dict: Dict[str, Any],
         transform: Optional[callable] = ResizeToLongestSide(),
-        config=_global_configs,
+        config=_GLOBAL_CONFIGS,
     ):
         self.image_dir = image_dir
         self.masks_dir = masks_dir
@@ -118,6 +114,8 @@ class WingPatternDataset(Dataset):
         self.expected_heads = set(self.config.out_channels.keys())
         self.mask_ids = []
         for img_id in self.image_ids:
+            # TODO: re-running glob for each image seems inefficient; we could
+            # scan the directory once and try to match the filenames instead.
             is_valid, masks = self.find_matching_masks(img_id, self.masks_dir)
             self.valid.append(is_valid)
             self.mask_ids.append(masks)
@@ -144,19 +142,19 @@ class WingPatternDataset(Dataset):
             return False, {}
 
         # incomplete or mismatched files found
-        if len(masks_glob) != len(HEADS):
+        if len(masks_glob) != len(self.expected_heads):
             return False, {}
 
         masks = {}
         for mask_path in masks_glob:
             mask_id = os.path.basename(os.path.dirname(mask_path)).lower()
-            if mask_id in HEADS:
+            if mask_id in self.expected_heads:
                 masks[mask_id] = os.path.relpath(
                     mask_path, mask_dir
                 )  # keep relative sub-dir
 
         # check for typos, e.g. "vein" instead of "veins", etc.
-        if len(masks) != len(HEADS):
+        if len(masks) != len(self.expected_heads):
             return False, {}
 
         return True, masks
@@ -165,6 +163,9 @@ class WingPatternDataset(Dataset):
         return len(self.image_ids)
 
     def __getitem__(self, idx):
+        """
+        TODO: consider moving some of these outside to reduce overhead on __getitem__
+        """
         img_id = self.image_ids[idx]
         image_path = os.path.join(self.image_dir, img_id)
 
@@ -178,15 +179,15 @@ class WingPatternDataset(Dataset):
         image = image.astype(float) / 255.0
 
         # convert to HSV
-        if CONVERT_TO_HSV:
+        if self.config.convert_to_hsv:
             image = preprocess.convert_to_hsv(image)
+
+        image_tensor = torch.from_numpy(image).permute(2, 0, 1).float()
 
         masks = {}
         for mask_id, mask_path in masks_paths.items():
             mask = imread(mask_path)
             masks[mask_id] = torch.from_numpy(mask).unsqueeze(0).float()
-
-        image_tensor = torch.from_numpy(image).permute(2, 0, 1).float()
 
         sample = {
             "image": image_tensor,
@@ -201,7 +202,9 @@ class WingPatternDataset(Dataset):
         final_masks = {}
         for mask_id, mask_tensor in sample["masks"].items():
             if self.config.out_channels[mask_id] > 1:
-                final_masks[mask_id] = mask_tensor.squeeze(0).long()
+                final_masks[mask_id] = mask_tensor.squeeze(
+                    0
+                ).long()  # TODO: is this correct?
             else:
                 final_masks[mask_id] = mask_tensor
 
