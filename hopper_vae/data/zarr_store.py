@@ -74,9 +74,10 @@ class HopperWingsZarrStore:
         config: HopperWingsZarrStoreConfig = None,
         records_table: pd.DataFrame = None,
     ):
-        self.path = config.path
-        self.root = None
+        
         self.config = config if config else self.default_config
+        self.path = self.config.path
+        self.root = None
 
         self.records_table = records_table
         self.records = {}
