@@ -4,7 +4,7 @@
 ![Python](https://img.shields.io/badge/python-3.9+-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-pytest-green)
-![Coverage](https://img.shields.io/badge/coverage-73%25-yellowgreen)
+![Coverage](https://img.shields.io/badge/coverage-71%25-yellowgreen)
 ![Status](https://img.shields.io/badge/status-alpha-orange)
 
 > ** Alpha Release - July 2025 **
@@ -16,9 +16,9 @@ Mapping and representation learning of forewing morphology and patterning in pla
 <img src="assets/wings.gif", style="max-width: 300px;">
 </p>
 
-Planthoppers have evolved remarkably diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an ongoing effort toward representation learning of the underlying _morpho-chromosapce_.
+Planthoppers have evolved remarkably intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an ongoing effort toward representation learning of the underlying _morpho-chromosapce_.
 
-The current repository includes components of an end-to-end pipeline for record management, image pre-processing, semantic segmentation, and morphometry.
+This repository provides the components of an end-to-end pipeline, including utilities for dataset management, image processing, semantic segmentation, and morphometry of light microscopy and photographic images.
 
 ## Data
 Data curation for the HopperScapes project is ongoing. Part of the effort is focused on sampling established Northeast populations of _Lycorma delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are organized as specified in [hopper_vae.data.record.py](./hopper_vae/data/record.py).
@@ -40,7 +40,7 @@ Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-
 
 
 ## Repository Structure
-[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is a growing toolset for records management, image pre-processing, semantic segmentation, post-processing, and quantification of planthopper forewing compositions. The repository is organized as follows:
+[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is a growing toolset for dataset management, image pre-processing, semantic segmentation, post-processing, and quantification of planthopper forewing compositions. The repository is organized as follows:
 
     .
     ├── hopperscapes
@@ -56,12 +56,17 @@ Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-
     ├── scripts
     └── tests
 
-See the respective READMEs for details.
+The components, functions, and implementation details of each module can be found in the respective READMEs.
+
+## Usage
+
+A typical pipeline for light microscopy data is as follows:
+
+<p align="center"> <code>Preprocessing -> Segmentation → Postprocessing → Morphometry</code> </p>
+
 
 ## Segmentation
-To study wing morphology, microstructure (venation), and pigmentation patterns, we segment the transmitted light microscopy images for wing outlines, veins, spots, and pigmentation domains. 
-
-For model implementation and training details, see [hopper_vae/segmentation/README.md](hopper_vae/segmentation/README.md).
+Quantitative analysis of wing morphology, microstructure (venation), and pigmentation patterns relies on accurate segmentation of the respective features in images. See [hopper_vae/segmentation/README.md](hopper_vae/segmentation/README.md) for details of segmentation model design and training.
 
 ## Data Sources
 ### Local sources:
@@ -80,7 +85,7 @@ For model implementation and training details, see [hopper_vae/segmentation/READ
 HopperScapes is in active development. Please see [STATUS.md](STATUS.md) for details.
 
 ## Credits
-[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) was conceived, planned, and executed by [Sassan Ostvar](sassanostvar.github.io).
+[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) was conceived, designed, planned, and executed by [Sassan Ostvar](sassanostvar.github.io).
 
 ## Contact
 Contributions and collaborations are most welcome. Please reach out to [Sassan Ostvar](sassanostvar.github.io).

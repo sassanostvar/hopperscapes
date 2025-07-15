@@ -1,21 +1,30 @@
 # Segmentation
 
-Analysis of wing morphology and patterning poses a multiclass semantic segmentation problem. Some of the tasks like identifying the wing area, spots, and pigmentation domains are relatively trivial. Other tasks like segmenting the venation network are more challenging. 
+Quantitative analysis of wing morphology and patterning requires accurate localization of the respective structures in imaging data. Identification of distinct structures can be posed as a multi-task semantic segmentation problem. 
 
-We use a multi-step approach to the segmentation problem as outlined below.
+Depending on the species, some of the features like the wing outline, spots, and pigmentation domains are more or less trivial to segment. 
+
+Other features like the venation network can be challenging to segment when sample illumination is not optimal and the venation network is occluded by the other features. 
+
+We use a multi-step multi-resolution approach to the segmentation problem as outlined below.
 
 ## 1. First-pass multi-task semantic segmentation
-The first segmentation model (models.HopperNetLite) is a compact UNet with ~100k trainable paramters for multi-task semantic segmentation. This model is trained on downsampled images and used during pre-processing to help standardize the dataset before fine-grained downstream analyses.
+The first segmentation model (models.HopperNetLite) is a compact multi-head UNet with ~100k trainable paramters and configurable heads supporting multiple semantic segmentation tasks. We train the model on downsampled and padded images (512x512 or 1024x1024) and use the model in pre-processing to standardize the dataset for downstream analysis.
 
-We adopt supervised learning using a composite loss function to train the model on four semantic segmentation tasks for wing outlines, spots, pigmentation domains, and venation. 
+We adopt supervised learning to train the model using a composite loss function for semantic segmentation tasks targeting (1) wing outlines, (2) spots, (3) pigmentation domains, and (4) venation networks. 
 
 <p align="center">
 <img src="../../assets/sample_record.png", style="max-width: 600px;">
 </p>
 
-The composite loss function is defined in [loss.py](loss.py) and configured in [configs.py](../configs.py).
+### Loss function
+A composite loss function is defined in [loss.py](loss.py) and configured in [configs.py](../configs.py). The criterion is designed to accommodate extreme class imbalance and task-specific morphological features. We use binary cross entropy (BCE) and soft Dice loss for wings, focal loss and soft dice loss for spots, BCE, soft Dice, and soft-cLDice for veins, and cross entropy loss for pigmentation domains. 
 
-This simple model manages to solve the wing, pigmentation domain, and spots segmentation problems, but struggles with the venation network.
+### Training
+To ensure stable training performance, we implement gradient clipping and dynamic freezing/unfreezing of heads based on preset threshold Dice scores during model training. 
+
+### Performance
+In practice, the wing Dice scores saturates quickly, followed by the pigmentation domains and spots, in that order. As expected, HopperNetLite struggles with the venation network.
 
 ## Datasets
 The train, valid, and test sets are organized as follows: 
@@ -35,16 +44,3 @@ The train, valid, and test sets are organized as follows:
                     └── <record_id>_seg_wing.tif
 
 The associated pytorch Dataset and custom collate functions are defined in [dataset.py](dataset.py).
-
-## Roadmap
-
-- [ ] Model architecture:
-    - [ ] add trainable upsampling blocks
-    - [ ] increase model depth 
-    - [ ] test residual blocks 
-    - [ ] test transformers for bottleneck 
-- [ ] Training datasets:
-    - [ ] implement multiprocessing for data agumentation pipeline
-    - [ ] expand data augmentation with tile-wise color inversions 
-    - [ ] expand data augmentation with focal gaussian blur
-    - [ ] include other branching structures like leaves in training
