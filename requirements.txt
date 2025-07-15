@@ -9,6 +9,7 @@ aiohttp
 requests
 torchinfo
 scipy
+pyarrow==17.0.0
 scikit-image
 pillow
 torchmetrics 
@@ -21,6 +22,7 @@ sknw
 pyyaml
 SPARQLWrapper
 networkx
+zarr
 ome-zarr
 dask[complete]
 imagecodecs
