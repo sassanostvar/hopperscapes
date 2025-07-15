@@ -179,8 +179,13 @@ class HopperNetTrainer:
 
         self.dice_scores = dict.fromkeys(self.model.heads.keys(), 0.0)
 
-    def train(self):
+    def train(self) -> None:
+        """
+        Runs model training. If specified, dynamically freezes/unfreezes
+        heads based on given threshold Dice scores.
+        """
         for i in range(self.num_epochs):
+            #
             self.epoch += 1
             logger.info("----- Starting epoch %d/%d -----", self.epoch, self.num_epochs)
 
@@ -222,7 +227,7 @@ class HopperNetTrainer:
             # validate epoch
             self.valid_epoch()
 
-    def train_epoch(self):
+    def train_epoch(self) -> None:
         """
         Run one training epoch.
         """
@@ -271,7 +276,48 @@ class HopperNetTrainer:
             self.num_iters += 1
             n_batches += 1
 
-    def update_dice_scores(self, logits=None, targets=None, clipping_masks=None):
+    # ------------- VALID LOOP START -------------------------
+    def valid_epoch(self) -> None:
+        """
+        Run one validation epoch.
+        """
+        self.model.eval()
+
+        total_valid_loss = 0.0
+        for sample in tqdm(
+            self.valid_loader, ascii=True, desc="running validation epoch..."
+        ):
+            images = sample["image"].to(self.device)
+            masks = {k: v.to(self.device) for k, v in sample["masks"].items()}
+
+            with torch.no_grad():
+                logits = self.model(images)
+
+                # compute losses
+                valid_loss, _ = self.criteria(
+                    inputs=logits,
+                    targets=masks,
+                    weights=self.loss_weights,
+                )
+            total_valid_loss += valid_loss.item()
+
+            self.writer.add_scalar(
+                "loss/valid_loss",
+                total_valid_loss,
+                self.num_iters,
+            )
+
+    # ------------- VALID LOOP END -------------------------
+
+    def update_dice_scores(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+        clipping_masks: torch.Tensor = None,
+    ) -> None:
+        """
+        Compute the Dice scores for each head.
+        """
         with torch.no_grad():
             for head_name, head_logits in logits.items():
                 if head_name not in self.dice_scores:
@@ -297,13 +343,11 @@ class HopperNetTrainer:
                         ).item()
                     )
 
-    def valid_epoch(self):
+    def save_checkpoint(self) -> None:
         """
-        Run one validation epoch.
+        **NOTE**: the inference script is going to require 'model_configs' to instantiate
+        the model for inference.
         """
-        pass
-
-    def save_checkpoint(self):
         checkoint = {
             "epoch": self.epoch,
             "model_configs": self.model.configs,
@@ -332,7 +376,7 @@ class HopperNetTrainer:
             "Checkpoint saved at epoch %d to %s", self.epoch, self.checkpoints_dir
         )
 
-    def log_training_performance(self):
+    def log_training_performance(self) -> None:
         """
         Log training data for dashboard.
         """
@@ -386,7 +430,7 @@ def main():
     # ----- Load configs --------
     # ---------------------------
     if configs_path is None:
-        c = SegmentationModelConfigs()
+        c = SegmentationModelConfigs() # load the default if no configs is provided
     else:
         c = SegmentationModelConfigs.from_yaml(configs_path)
 

@@ -4,11 +4,20 @@ from pathlib import Path
 import pytest
 from torch.utils.data import DataLoader
 
-IMAGES_DIR = (
+# Train
+TRAIN_IMAGES_DIR = (
     Path(__file__).parent.parent / "test_data" / "dataset" / "raw" / "train" / "images"
 )
-MASKS_DIR = (
+TRAIN_MASKS_DIR = (
     Path(__file__).parent.parent / "test_data" / "dataset" / "raw" / "train" / "masks"
+)
+
+# Valid
+VALID_IMAGES_DIR = (
+    Path(__file__).parent.parent / "test_data" / "dataset" / "raw" / "valid" / "images"
+)
+VALID_MASKS_DIR = (
+    Path(__file__).parent.parent / "test_data" / "dataset" / "raw" / "valid" / "masks"
 )
 
 SAVEDIR = (
@@ -27,21 +36,37 @@ def test_train_pipeline(debug=False):
     from hopper_vae.segmentation.dataset import WingPatternDataset, hopper_collate_fn
 
     # Create a dataset instance
-    dataset = WingPatternDataset(
-        image_dir=IMAGES_DIR,
-        masks_dir=MASKS_DIR,
+    train_dataset = WingPatternDataset(
+        image_dir=TRAIN_IMAGES_DIR,
+        masks_dir=TRAIN_MASKS_DIR,
+    )
+    valid_dataset = WingPatternDataset(
+        image_dir=VALID_IMAGES_DIR,
+        masks_dir=VALID_MASKS_DIR,
     )
 
     # Check the length of the dataset
-    assert len(dataset) > 0, "Dataset is empty"
+    assert len(train_dataset) > 0, "Dataset is empty"
+    assert len(valid_dataset) > 0, "Dataset is empty"
+
 
     # Check the first sample
-    sample = dataset[0]
+    sample = train_dataset[0]
+    assert "image" in sample, "Image not found in sample"
+    assert "masks" in sample, "Masks not found in sample"
+    sample = valid_dataset[0]
     assert "image" in sample, "Image not found in sample"
     assert "masks" in sample, "Masks not found in sample"
 
     train_loader = DataLoader(
-        dataset=dataset,
+        dataset=train_dataset,
+        batch_size=1,
+        collate_fn=hopper_collate_fn,
+        shuffle=False,
+        drop_last=False,
+    )
+    valid_loader = DataLoader(
+        dataset=valid_dataset,
         batch_size=1,
         collate_fn=hopper_collate_fn,
         shuffle=False,
@@ -75,6 +100,7 @@ def test_train_pipeline(debug=False):
         model=model,
         freeze_heads=c.freeze_heads,
         train_loader=train_loader,
+        valid_loader=valid_loader,
         criteria=loss_criteria,
         total_loss_weights=c.total_loss_weights,
         lr=c.learning_rate,
