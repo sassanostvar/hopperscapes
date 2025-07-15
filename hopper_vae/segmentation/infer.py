@@ -59,7 +59,7 @@ def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:
 def preprocess_image(
     image_path: str,
     device: str = "cpu",
-    transform = T.ToTensor(),
+    transform=T.ToTensor(),
 ) -> torch.Tensor:
     """
     Prepare image for inference.
@@ -150,10 +150,10 @@ def main(args):
     checkpoint_path = args.checkpoint_path
     device = args.device
     savepath = args.savepath
-    rewrite = args.rewrite
+    overwrite = args.rewrite
     extension = args.file_extension
 
-    os.makedirs(savepath, exist_ok=rewrite)
+    os.makedirs(savepath, exist_ok=overwrite)
 
     record_id = image_path.split("/")[-1].split(".")[0]
 
@@ -179,9 +179,7 @@ if __name__ == "__main__":
         "--device", required=True, help="Device to use for inference."
     )
     arg_parser.add_argument(
-        "--rewrite",
-        action="store_true",
-        help='Rewrite existing outputs.'
+        "--overwrite", action="store_true", help="Overwrite any existing outputs."
     )
     arg_parser.add_argument(
         "--file-extension",
