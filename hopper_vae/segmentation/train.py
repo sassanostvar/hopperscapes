@@ -7,11 +7,14 @@ import logging
 import os
 from typing import Dict
 
+import random
+import numpy as np
+
 import torch
 import torch.optim as optim
 import torchinfo
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
@@ -24,7 +27,7 @@ from hopper_vae.segmentation.models import HopperNetLite
 Checklist: 
 - [ ] add validation
 - [x] add CLI
-- [ ] set up configs yaml
+- [x] set up configs yaml
 - [x] test on GPUs
 - [x] add logging
 - [ ] checkpoint logs
@@ -35,13 +38,74 @@ Checklist:
 logger = logging.getLogger("HopperNetTrainingLog")
 
 
+def init_seeds(seed: int = 42):
+    """
+    Set seeds for reproducibility.
+    """
+    torch.manual_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+
+
+def init_datasets(
+    images_dir: str,
+    masks_dir: str,
+    batch_size: int,
+    valid_split: float = 0.2,
+    seed: int = 42,
+):
+    """
+    Create a random train/valid split and generate the DataLoaders.
+
+    Args:
+        images_dir (str): Path to image direcotry.
+        masks_dir (str): Path to the masks root directory.
+        batch_size (int): Batch size for DataLoaders.
+        valid_split (float): Fraction of data used for validation.
+        seed (int): Random seed (for reproducibility).
+
+    Returns:
+        train_loader (DataLoader): Train DataLoader.
+        valid_loader (DataLoader): Valid DataLoader.
+    """
+
+    init_seeds(seed)
+
+    dataset = WingPatternDataset(image_dir=images_dir, masks_dir=masks_dir)
+
+    # split
+    dataset_size = len(dataset)
+    valid_size = int(dataset_size * valid_split)
+    train_size = dataset_size - valid_size
+
+    train_dataset, valid_dataset = random_split(dataset, [train_size, valid_size])
+
+    train_loader = DataLoader(
+        dataset=train_dataset,
+        batch_size=batch_size,
+        collate_fn=hopper_collate_fn,
+        shuffle=True,
+        drop_last=False,
+    )
+
+    valid_loader = DataLoader(
+        dataset=valid_dataset,
+        batch_size=batch_size,
+        collate_fn=hopper_collate_fn,
+        shuffle=False,
+        drop_last=False,
+    )
+
+    return train_loader, valid_loader
+
+
 class HopperNetTrainer:
     def __init__(
         self,
         model: nn.Module,
         freeze_heads: bool,
         train_loader: DataLoader,
-        # valid_loader: DataLoader = None,
+        valid_loader: DataLoader,
         criteria: nn.Module,
         total_loss_weights: Dict[str, float],
         lr: float,
@@ -63,7 +127,7 @@ class HopperNetTrainer:
         self.model = model
         self.freeze_heads = freeze_heads
         self.train_loader = train_loader
-        # self.valid_loader = valid_loader
+        self.valid_loader = valid_loader
         self.criteria = criteria
         self.global_loss_weights = total_loss_weights or None
         self.loss_weights = (
@@ -154,7 +218,7 @@ class HopperNetTrainer:
                 self.log_training_performance()
 
             # validate epoch
-            # self.valid_epoch()
+            self.valid_epoch()
 
     def train_epoch(self):
         """
@@ -345,14 +409,12 @@ def main():
     # ---------------------------
     # ----- Load dataset --------
     # ---------------------------
-    dataset = WingPatternDataset(image_dir=images_dir, masks_dir=masks_dir)
-
-    train_loader = DataLoader(
-        dataset=dataset,
+    train_loader, valid_loader = init_datasets(
+        images_dir=images_dir,
+        masks_dir=masks_dir,
         batch_size=c.batch_size,
-        collate_fn=hopper_collate_fn,
-        shuffle=True,
-        drop_last=False,
+        valid_split=c.valid_split,
+        seed=c.random_seed,
     )
 
     savedir = os.path.join(
@@ -371,6 +433,7 @@ def main():
         model=model,
         freeze_heads=c.freeze_heads,
         train_loader=train_loader,
+        valid_loader=valid_loader,
         criteria=loss_criteria,
         total_loss_weights=c.total_loss_weights,
         lr=c.learning_rate,

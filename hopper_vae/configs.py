@@ -24,6 +24,8 @@ class SegmentationModelConfigs:
 
     # training configs
     batch_size: int = 4
+    valid_split: float = 0.2
+    random_seed: int = 42
     num_workers: int = 4
     epochs: int = 200
     learning_rate: float = 5e-5
