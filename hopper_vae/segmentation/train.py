@@ -30,9 +30,11 @@ Checklist:
 - [x] set up configs yaml
 - [x] test on GPUs
 - [x] add logging
+- [ ] log preprocessing
 - [ ] checkpoint logs
 - [ ] dynamic loss weight adjustments
-- [ ] distributed training
+- [ ] add support for distributed training
+- [ ] add wandb integration
 """
 
 logger = logging.getLogger("HopperNetTrainingLog")
@@ -304,7 +306,7 @@ class HopperNetTrainer:
     def save_checkpoint(self):
         checkoint = {
             "epoch": self.epoch,
-            "heads": self.model.heads,
+            "model_configs": self.model.configs,
             "model_state_dict": self.model.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),
             "total_loss": self.total_loss,

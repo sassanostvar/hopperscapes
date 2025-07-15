@@ -36,6 +36,13 @@ class HopperNetLite(nn.Module):
                 "Invalid `out_channels' paramter. Please provide a dict mapping head names to output channel counts."
             )
 
+        self.configs = {
+            'num_groups': num_groups,
+            'in_channels': in_channels,
+            'out_channels': out_channels,
+            'upsample_mode': upsample_mode
+        }
+
         heads = out_channels.keys()
 
         self.stem = nn.Sequential(
