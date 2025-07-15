@@ -18,7 +18,7 @@ handler = logging.StreamHandler()  # stdout
 handler.setFormatter(logging.Formatter("%(name)s %(levelname)s: %(message)s"))
 logger.addHandler(handler)
 
-_PROPERTIES = [
+_WING_PROPERTIES = [
     "label",
     "area",
     "area_bbox",
@@ -29,10 +29,16 @@ _PROPERTIES = [
     "eccentricity",
     "moments_central",
     "perimeter",
+    "perimeter_crofton",
     "orientation",
     "solidity",
 ]
 
+
+__all__ = [
+    'WingMorphometerConfigs',
+    'WingMorphometer'
+]
 
 @dataclass
 class WingMorphometerConfigs:
@@ -40,12 +46,12 @@ class WingMorphometerConfigs:
     Configurations for wing mask post-processing and denoising.
     """
 
-    area_threshold: int = 100
-    min_speck_size: int = 100
+    max_hole_area: int = 100
+    min_speck_area: int = 100
     properties: Tuple[str] = field(default_factory=tuple)
 
     def __post_init__(self):
-        self.properties = _PROPERTIES
+        self.properties = _WING_PROPERTIES
 
 
 class WingMorphometer:
@@ -56,10 +62,12 @@ class WingMorphometer:
         configs ("WingMorphometerConfigs"): Configurations for wing mask post-processing and denoising.
     """
 
-    def __init__(self, configs: WingMorphometerConfigs = None):
-        self.configs = (
-            configs if configs else WingMorphometerConfigs()
-        )  # use default if not provided
+    def __init__(self, configs: Optional["WingMorphometerConfigs"] = None):
+        if configs is None:
+            self.configs = WingMorphometerConfigs()
+        else:
+            assert isinstance(configs, WingMorphometerConfigs), "Unrecognized input for WingMorphometer configs."
+            self.configs = configs
 
     def _isolate_wing_region(self, wing_mask: np.ndarray):
         """
@@ -84,10 +92,10 @@ class WingMorphometer:
         Remove noise from isolated wing mask.
         """
         _specks_removed = remove_small_objects(
-            wing_mask, min_size=self.configs.min_speck_size
+            wing_mask, min_size=self.configs.min_speck_area
         )
         _holes_removed = remove_small_holes(
-            _specks_removed, area_threshold=self.configs.area_threshold
+            _specks_removed, area_threshold=self.configs.max_hole_area
         )
         return _holes_removed
 
@@ -104,6 +112,10 @@ class WingMorphometer:
         """
         if wing_mask.ndim != 2:
             raise ValueError(f"Expect 2D wing mask but got {wing_mask.ndim}")
+
+        if wing_mask.dtype != bool:
+            logger.warning('The mask is not a binary -- will enforce binary...')
+            wing_mask = wing_mask > 0
 
         processed_mask = self._isolate_wing_region(wing_mask)
 

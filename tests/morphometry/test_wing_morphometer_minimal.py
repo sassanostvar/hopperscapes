@@ -5,11 +5,16 @@ import pytest
 def test_wing_morphometer_io():
     import numpy as np
 
-    from hopper_vae.morphometry.wing import WingMorphometer, WingMorphometerConfigs
+    from hopper_vae.morphometry.wing import WingMorphometer
+
+    wrong_configs = {"key": 10}
+    with pytest.raises(AssertionError):
+        morphometer = WingMorphometer(wrong_configs)
 
     wrong_input = np.zeros((3, 10, 10))
     with pytest.raises(ValueError):
-        morphometer = WingMorphometer(wrong_input)
+        morphometer = WingMorphometer()
+        morphometer.run(wrong_input)
 
 
 @pytest.mark.unit
@@ -45,12 +50,12 @@ def test_wing_morphometer_on_noisy_synthetic_data():
     wing_mask[210:220, 210:220] = False
 
     configs = WingMorphometerConfigs()
-    configs.area_threshold = 101
-    configs.min_speck_size = 101
+    configs.max_hole_area = 101
+    configs.min_speck_area = 101
     morphometer = WingMorphometer(configs)
 
-    assert morphometer.configs.area_threshold == 101, "Failed to customize configs."
-    assert morphometer.configs.min_speck_size == 101, "Failed to customize configs."
+    assert morphometer.configs.max_hole_area == 101, "Failed to customize configs."
+    assert morphometer.configs.min_speck_area == 101, "Failed to customize configs."
 
     table, _final_mask = morphometer.run(wing_mask, return_mask=True)
     assert isinstance(
