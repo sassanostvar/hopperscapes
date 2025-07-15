@@ -27,7 +27,9 @@ Checklist:
 - [ ] set up configs yaml
 - [x] test on GPUs
 - [x] add logging
-- [ ] checkpoint logs?
+- [ ] checkpoint logs
+- [ ] dynamic loss weight adjustments
+- [ ] distributed training
 """
 
 logger = logging.getLogger("HopperNetTrainingLog")
@@ -249,6 +251,12 @@ class HopperNetTrainer:
             "threshold_dice_scores": self.threshold_dice_scores,
             "device": self.device,
             "savedir": self.savedir,
+            "training_parameters": {
+                "lr": self.lr,
+                "weight_decay": self.weight_decay,
+                "clip_gradients": self.clip_gradients,
+                "max_norm": self.max_norm,
+            },
         }
         torch.save(
             checkoint,
@@ -292,6 +300,9 @@ def main():
     args_parser = argparse.ArgumentParser(
         description="Train semantic segmentation model."
     )
+    args_parser.add_argument(
+        "--configs_path", default=None, help="Path to config YAML."
+    )
     args_parser.add_argument("--images_dir", default=None, help="Path to images")
     args_parser.add_argument("--masks_dir", default=None, help="Path to masks")
     args_parser.add_argument(
@@ -300,6 +311,7 @@ def main():
 
     args = args_parser.parse_args()
 
+    configs_path = args.configs_path
     images_dir = args.images_dir
     masks_dir = args.masks_dir
     checkpoint_path = args.checkpoint_path
@@ -307,7 +319,10 @@ def main():
     # ---------------------------
     # ----- Load configs --------
     # ---------------------------
-    c = SegmentationModelConfigs()
+    if configs_path is None:
+        c = SegmentationModelConfigs()
+    else:
+        c = SegmentationModelConfigs.from_yaml(configs_path)
 
     # ---------------------------
     # ----- Set up model --------

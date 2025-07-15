@@ -1,0 +1,87 @@
+model_name: "hopper_segmentation_model"
+savedir: "./outputs/hopper_models"
+device: "cpu"
+square_image_size: 1024
+convert_to_hsv: false
+
+out_channels:
+  wing: 1
+  veins: 1
+  spots: 1
+  domains: 3
+
+num_groups: 1
+batch_size: 4
+num_workers: 4
+epochs: 100
+learning_rate: 0.00005
+weight_decay: 0.01
+lr_scheduler: "cosine"
+lr_scheduler_params:
+  T_max: 50
+  eta_min: 0.00001
+warmup_epochs: 5
+warmup_lr: 0.000001
+checkpoint_every: 5
+log_every: 10
+save_best: true
+clip_gradients: true
+max_grad_norm: 5.0
+
+total_loss_weights:
+  wing: 1.0
+  veins: 1.0
+  spots: 1.0
+  domains: 1.0
+
+dice_thresholds_to_freeze_heads:
+  wing: 1.0
+  veins: 0.95
+  spots: 0.95
+  domains: 0.95
+
+loss_function_configs:
+  wing:
+    bce:
+      weight: 1.0
+      params:
+        pos_weight: 5.0
+    soft_dice:
+      weight: 1.0
+      params: {}
+  veins:
+    bce:
+      weight: 0.5
+      params:
+        pos_weight: 100.0
+    soft_dice:
+      weight: 2.0
+      params: {}
+    cldice:
+      weight: 2.0
+      params: {}
+  spots:
+    focal:
+      weight: 1.0
+      params:
+        alpha: 0.85
+        gamma: 2.0
+    soft_dice:
+      weight: 1.0
+      params: {}
+  domains:
+    ce:
+      weight: 1.0
+      params: {}
+
+freeze_heads:
+  wing: false
+  veins: false
+  spots: false
+  domains: false
+
+dice_scores_to_track:
+  wing: "soft_dice"
+  veins: "cldice"
+  spots: "soft_dice"
+  domains: "soft_dice"
