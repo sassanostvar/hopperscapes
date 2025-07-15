@@ -14,6 +14,7 @@ TEST_DATA_PATH = (
     Path(__file__).parent.parent / "test_data" / "LD_F_TC_02024_0024_left_forewing.jpg"
 )
 
+
 @pytest.mark.unit
 def test_network_forward_pass(debug=False):
     """
