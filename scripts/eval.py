@@ -1,10 +1,9 @@
 """
-Evaluate pretrained checkpoint on sample data.
+Apply a pretrained checkpoint to sample data and save the output visualizations.
 """
 
-import sys
-
-sys.path.append("../hopperscapes")
+# import sys
+# sys.path.append("../hopperscapes")
 
 
 import argparse
@@ -107,7 +106,7 @@ def visualize_predictions(sample, masks, output):
         else:
             pred_logit = output[key].squeeze()
             pred_prob = torch.sigmoid(pred_logit)
-            pred_prob = pred_prob.squeeze().numpy()
+            pred_prob = pred_prob.squeeze().numpy() # detach here?
             mask = pred_prob > 0.5
 
             color = np.concatenate([rgb_colors[key], np.array([0.6])], axis=0)
@@ -122,10 +121,54 @@ def visualize_predictions(sample, masks, output):
     return fig, ax
 
 
-def main():
+def main(args):
     """
     Apply pre-trained checkpoint to sample data and visualize the predictions and groud truths.
     """
+    images_dir = args.images_dir
+    masks_dir = args.masks_dir
+    checkpoint_path = args.checkpoint
+    savedir = args.savedir
+    device = args.device
+    record_idx = args.record_index
+
+    # Load the dataset
+    dataset = WingPatternDataset(image_dir=images_dir, masks_dir=masks_dir)
+    print(f"dataset length: {len(dataset)}")
+
+    # load the checkpoint
+    checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
+    heads = checkpoint["heads"]
+    out_channels = {head: 1 for head in heads}
+    out_channels["domains"] = 3  # shouldn't hand-code here..
+
+    # Load the model
+    model = HopperNetLite(
+        num_groups=1,  # for GroupNorm
+        out_channels=out_channels,  # use the heads from the checkpoint
+    )
+    model.load_state_dict(torch.load(checkpoint_path)["model_state_dict"])
+
+    # evaluate the model on the dataset
+    model.eval()
+    # model.to(device)
+    with torch.no_grad():
+        sample = dataset[record_idx]
+        image = sample["image"].unsqueeze(0)
+        masks = sample["masks"]
+        output = model(image)
+
+    # plot the predictions and ground truths
+    fig, ax = visualize_predictions(sample, masks, output)
+
+    # save output to file
+    plots_savedir = os.path.join(savedir, "plots")
+    os.makedirs(plots_savedir, exist_ok=True)
+    checkpoint_name = os.path.basename(checkpoint_path).replace(".pth", ".png")
+    fig.savefig(os.path.join(plots_savedir, checkpoint_name), dpi=300)
+
+
+if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(
         description="Apply semantic segmentation model to sample data"
     )
@@ -155,47 +198,4 @@ def main():
 
     args = arg_parser.parse_args()
 
-    images_dir = args.images_dir
-    masks_dir = args.masks_dir
-    checkpoint_path = args.checkpoint
-    savedir = args.savedir
-    device = args.device
-    record_idx = args.record_index
-
-    # Load the dataset
-    dataset = WingPatternDataset(image_dir=images_dir, masks_dir=masks_dir)
-    print(f"dataset length: {len(dataset)}")
-
-    # load the checkpoint
-    checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
-    heads = checkpoint["heads"]
-    out_channels = {head: 1 for head in heads}
-    out_channels["domains"] = 3  # shouldn't hand-code here..
-
-    # Load the model
-    model = HopperNetLite(
-        num_groups=1,  # for GroupNorm
-        out_channels=out_channels,  # use the heads from the checkpoint
-    )
-    model.load_state_dict(torch.load(checkpoint_path)["model_state_dict"])
-
-    # evaluate the model on the dataset
-    model.eval()
-    with torch.no_grad():
-        sample = dataset[record_idx]
-        image = sample["image"].unsqueeze(0)
-        masks = sample["masks"]
-        output = model(image)
-
-    # plot the predictions and ground truths
-    fig, ax = visualize_predictions(sample, masks, output)
-
-    # save output to file
-    plots_savedir = os.path.join(savedir, "plots")
-    os.makedirs(plots_savedir, exist_ok=True)
-    checkpoint_name = os.path.basename(checkpoint_path).replace(".pth", ".png")
-    fig.savefig(os.path.join(plots_savedir, checkpoint_name), dpi=300)
-
-
-if __name__ == "__main__":
-    main()
+    main(args)
