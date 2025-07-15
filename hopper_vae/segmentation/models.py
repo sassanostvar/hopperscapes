@@ -1,3 +1,7 @@
+"""
+Repository of semantic segmentation models for various wing morphology targets. 
+"""
+
 from typing import Dict
 
 import torch
@@ -8,25 +12,35 @@ import torchinfo
 class HopperNetLite(nn.Module):
     """
     Multi-head multi-class semantic segmentation of
-    wing structure and patterns.
+    wing structure and pigmentation patterns.
+
+    Args:
+        num_groups (int): Numer of groups for GroupNorm (default is 1).
+        in_channels (int): Numer of input channels (default is 3 for RBG images).
+        out_channels (Dict[str, int]): Dict specifying the number of output channels for each head.
+        upsample_mode (str): Upsample mode used in the decoder pass (default is 'bilinear').
+
     """
 
     def __init__(
         self,
         num_groups: int = 1,
+        in_channels: int = 3,
         out_channels: Dict[str, int] = None,
+        upsample_mode: str = "bilinear",
     ):
         super().__init__()
 
-        heads = out_channels.keys() if out_channels is not None else None
-        if heads is None:
+        if out_channels is None or not isinstance(out_channels, dict):
             raise ValueError(
-                "Please provide a set of heads for the HopperNetLite model."
+                "Invalid `out_channels' paramter. Please provide a dict mapping head names to output channel counts."
             )
+
+        heads = out_channels.keys()
 
         self.stem = nn.Sequential(
             nn.Conv2d(
-                in_channels=3,
+                in_channels=in_channels,
                 out_channels=8,
                 kernel_size=3,
                 stride=1,
@@ -129,14 +143,8 @@ class HopperNetLite(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        # self.decoder1_upsample = nn.ConvTranspose2d(
-        #     in_channels=64,
-        #     out_channels=32,
-        #     kernel_size=2,
-        #     stride=2,
-        # )
         self.decoder1_upsample = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False),
+            nn.Upsample(scale_factor=2, mode=upsample_mode, align_corners=False),
             nn.ReLU(inplace=True),
         )
 
@@ -158,15 +166,6 @@ class HopperNetLite(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        # self.decoder0_upsample = nn.ConvTranspose2d(
-        #     in_channels=16,
-        #     out_channels=16,
-        #     kernel_size=2,
-        #     stride=2,
-        #     # padding=1,
-        #     # dilation=1,
-        # )
-
         self.decoder1_mixer = nn.Sequential(
             nn.Conv2d(
                 in_channels=32 + 16,
@@ -174,7 +173,6 @@ class HopperNetLite(nn.Module):
                 kernel_size=3,
                 stride=1,
                 padding=1,
-                # dilation=1,
             ),
             nn.GroupNorm(
                 num_groups=num_groups,
@@ -188,7 +186,6 @@ class HopperNetLite(nn.Module):
                 kernel_size=3,
                 stride=1,
                 padding=1,
-                # dilation=1,
             ),
             nn.GroupNorm(
                 num_groups=num_groups,
@@ -200,19 +197,17 @@ class HopperNetLite(nn.Module):
         )
 
         self.decoder0_upsample = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False),
+            nn.Upsample(scale_factor=2, mode=upsample_mode, align_corners=False),
             nn.ReLU(inplace=True),
         )
 
         self.decoder0_mixer = nn.Sequential(
             nn.Conv2d(
                 in_channels=16 + 8,
-                # out_channels=16,
                 out_channels=32,
                 kernel_size=3,
                 stride=1,
                 padding=1,
-                # dilation=1,
             ),
             nn.GroupNorm(
                 num_groups=num_groups,
@@ -221,14 +216,11 @@ class HopperNetLite(nn.Module):
                 affine=True,
             ),
             nn.Conv2d(
-                # in_channels=16,
-                # out_channels=16,
                 in_channels=32,
                 out_channels=32,
                 kernel_size=3,
                 stride=1,
                 padding=1,
-                # dilation=1,
             ),
             nn.GroupNorm(
                 num_groups=num_groups,
@@ -242,7 +234,6 @@ class HopperNetLite(nn.Module):
         #
         # task-specific heads:
         # ---------------------------
-        # self.heads = dict.fromkeys(heads, None)
         self.heads = nn.ModuleDict()
         for head in heads:
             self.heads[head] = nn.Sequential(
@@ -252,13 +243,18 @@ class HopperNetLite(nn.Module):
                     kernel_size=1,
                     stride=1,
                     padding=0,
-                    # dilation=1,
                 ),
             )
 
     def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
         """
-        forward pass implementing the skip connections
+        Forward pass implementing skip connections.
+
+        Inputs:
+            x (torch.Tensor): Input image tensor of shape (N, 3, H, W)
+        Outputs:
+            Dict[str, torch.Tensor]: Dict of output tensors for each head, of shapes (N, C, H, W)
+
         """
         # stem
         x = self.stem(x)
@@ -272,14 +268,8 @@ class HopperNetLite(nn.Module):
         down16 = x
         x = self.encoder1_downsample(x)
 
-        # encoder 2
-        # TODO: add more blocks
-
         # bottleneck
         x = self.bottleneck(x)
-
-        # decoder 2
-        # TODO: add more blocks
 
         # decoder 1
         x = self.decoder1_upsample(x)
@@ -300,6 +290,9 @@ class HopperNetLite(nn.Module):
 
 
 def main():
+    """
+    Show model summary for a given input shape.
+    """
     from hopper_vae.configs import SegmentationModelConfigs
 
     configs = SegmentationModelConfigs()
