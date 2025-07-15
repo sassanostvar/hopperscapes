@@ -1,8 +1,13 @@
 # HOPPERSCAPES
 
-![Tests](https://img.shields.io/badge/tests-pytest-green)
-![Coverage](https://img.shields.io/badge/coverage-72%25-yellow)
 
+![Python](https://img.shields.io/badge/python-3.9+-blue)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Tests](https://img.shields.io/badge/tests-pytest-green)
+![Coverage](https://img.shields.io/badge/coverage-73%25-yellowgreen)
+![Status](https://img.shields.io/badge/status-alpha-orange)
+
+> ** Alpha Release - July 2025 **
 ## Overview
 
 Mapping and representation learning of forewing morphology and patterning in planthoppers.
@@ -18,6 +23,8 @@ The current repository includes components of an end-to-end pipeline for record 
 ## Data
 Data curation for the HopperScapes project is ongoing. Part of the effort is focused on sampling established Northeast populations of _Lycorma delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are organized as specified in [hopper_vae.data.record.py](./hopper_vae/data/record.py).
 
+Initial release of the first light microscopy dataset is planned for Summer 2025.
+
 ## Dataset structure
 Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-zarr-py) and the following specification defined in [hopper_vae/data/zarr.py](hopper_vae/data/zarr.py):
 
@@ -31,9 +38,10 @@ Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-
                 ├─ rgb/
                 └─ .attrs
 
-Initial release of the first light microscopy dataset is planned for Summer 2025.
 
 ## Repository Structure
+[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is a growing toolset for records management, image pre-processing, semantic segmentation, post-processing, and quantification of planthopper forewing compositions. The repository is organized as follows:
+
     .
     ├── hopperscapes
     │   ├── data
