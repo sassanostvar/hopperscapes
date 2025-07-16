@@ -12,6 +12,10 @@ def test_configs_yaml_writer():
     Test configuration loading from YAML file.
     """
     from hopperscapes.configs import SegmentationModelConfigs
+    import os
+
+    parent_dir = YAML_FILEPATH.parent
+    parent_dir.mkdir(parents=True, exist_ok=True)
 
     configs = SegmentationModelConfigs()
     configs.to_yaml(YAML_FILEPATH)

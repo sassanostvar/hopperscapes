@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-ZARR_PATH = Path(__file__).parent.parent.parent / "data" / "hopper_wings_zarr"
+ZARR_PATH = Path(__file__).parent.parent / "test_data" / "zarr_demo.zarr"
 
 
 @pytest.mark.unit

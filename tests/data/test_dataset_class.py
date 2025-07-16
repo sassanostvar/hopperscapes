@@ -5,7 +5,7 @@ import pytest
 
 from hopperscapes.segmentation.dataset import WingPatternDataset
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data" / "raw" / "train"
+DATA_DIR = Path(__file__).parent.parent / "test_data" / "dataset" / "raw" / "train"
 IMAGES_DIR = DATA_DIR / "images"
 MASKS_DIR = DATA_DIR / "masks"
 
