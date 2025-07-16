@@ -1,9 +1,10 @@
 import glob
 import os
+from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import torch
-from numpy.typing import ArrayLike
+import zarr
 from skimage.io import imread
 from torch.utils.data import Dataset
 
@@ -101,6 +102,8 @@ class WingPatternDataset(Dataset):
         transform: Optional[callable] = ResizeToLongestSide(),
         config=_GLOBAL_CONFIGS,
     ):
+        super().__init__()
+
         self.image_dir = image_dir
         self.masks_dir = masks_dir
         # self.metadata = metadata_dict
@@ -213,5 +216,79 @@ class WingPatternDataset(Dataset):
         return sample
 
 
-if __name__ == "__main__":
-    pass
+# ~~~ Zarr-facing Dataset ~~~~
+class HopperZarrDataset(Dataset):
+    """
+    Pytorch Dataset to read from a Zarr store prepare according to the
+    specification in "data.zarr_store.py".
+
+    Args:
+        zarr_path (str): Path to zarr store.
+        pyramid_level (int): ome-zarr pyramid level to access.
+        include_metadata (bool): Whether to retrieve and include the image metadata
+                                from the Zarr store (default is True).
+        transform (callable): Transform to apply to images.
+        configs ("SegmentationModelConfigs"): Segmentation data prep configs.
+    """
+
+    def __init__(
+        self,
+        zarr_path: str,
+        pyramid_level: int = 0,
+        include_metadata: bool = True,
+        transform: Optional[callable] = ResizeToLongestSide(),
+        configs=_GLOBAL_CONFIGS,
+    ):
+        super().__init__()
+
+        self.zarr_root = zarr.open(zarr_path, mode="r")
+        self.transform = transform
+        self.configs = configs
+        self.include_metadata = include_metadata
+
+        self.image_paths = []
+
+        # Helper method to walk through the Zarr store and find
+        # the images. The search string is "/rgb/{pyramid_level}".
+        def find_rgb_images(path, obj):
+            if isinstance(obj, zarr.core.Array) and path.endswith(
+                f"/rgb/{pyramid_level}"
+            ):
+                self.image_paths.append(path)
+
+        self.zarr_root.visititems(find_rgb_images)
+
+        # debugging
+        print(f"found {len(self.image_paths)} images in {zarr_path}")
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, idx: int):
+        """
+        Fetch the image at index "idx".
+        """
+
+        image_path = self.image_paths[idx]
+        image_arr = self.zarr_root[image_path][:]
+        image_tensor = torch.from_numpy(image_arr).float() / 255.0
+
+        if self.transform:
+            image_tensor = self.transform(image_tensor)
+
+        # metadata
+        if self.include_metadata:
+            try:
+                metadata_path = Path(image_path).parent.parent
+                metadata_group = self.zarr_root[str(metadata_path)]
+                metadata = dict(metadata_group.attrs)
+            except Exception as e:
+                raise ValueError(
+                    f"failed to retrieve metadata from {self.zarr_root} for index {idx}"
+                ) from e
+        else:
+            metadata = None
+
+        output = {"image": image_tensor, "masks": {}, "id": idx, "meta": metadata}
+
+        return output
