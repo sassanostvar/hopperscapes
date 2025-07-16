@@ -9,6 +9,9 @@
 # text files
 *.txt
 
+# ruff
+*ruff*
+
 # notebooks
 notebooks/*.ipynb
 
