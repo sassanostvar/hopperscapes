@@ -1,7 +1,7 @@
 import glob
 import os
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Callable
 
 import torch
 import zarr
@@ -47,41 +47,42 @@ class ResizeToLongestSide:
     Resize image to given dimensions and pad to make square.
     """
 
-    def __init__(self, target_image_dims: Tuple = SQUARE_IMAGE_DIMS):
+    def __init__(self, target_image_dims: Tuple[int, int] = SQUARE_IMAGE_DIMS):
         self.img_side_length = target_image_dims
 
-    def __call__(self, tensor: torch.Tensor, anti_aliasing=True) -> torch.Tensor:
+    def __call__(self, input_tensor: torch.Tensor, anti_aliasing=True) -> torch.Tensor:
         # no need to transform images with the right dimensions
-        if tensor[-2:].shape == (self.img_side_length, self.img_side_length):
-            return tensor
+        if input_tensor.shape[-2:] == (self.img_side_length, self.img_side_length):
+            return input_tensor
 
         # reorder the channels from (C, H, W) to (H, W, C)
-        img_arr = tensor.permute(1, 2, 0).cpu().numpy()
+        input_arr = input_tensor.permute(1, 2, 0).cpu().numpy()
 
-        # TODO: do we need to change the interpolation order
-        # for images vs. masks? also, we should consider re-binarizing
-        # the masks after resizing
-        img_arr = preprocess.resize_image(
-            img_arr,
+        # use interpolation order 0 for masks and 1 for images
+        is_mask = input_tensor.dim() == 3 and input_tensor.shape[0] == 1
+        interpolation_order = 0 if is_mask else 1
+
+        input_arr = preprocess.resize_image(
+            input_arr,
             target_side_length=self.img_side_length,
-            order=0,
+            order=interpolation_order,
             preserve_range=True,
             anti_aliasing=anti_aliasing,
         )
-        img_arr = preprocess.make_square(img_arr)
+        input_arr = preprocess.make_square(input_arr)
 
         # reorder the channels from (H, W, C) to (C, H, W)
-        img_tensor = torch.from_numpy(img_arr).permute(2, 0, 1).float()
-        return img_tensor
+        output_tensor = torch.from_numpy(input_arr).permute(2, 0, 1).float()
+        return output_tensor
 
 
 class SharedTransform:
-    def __init__(self, base_transform):
+    def __init__(self, base_transform: Callable[[torch.Tensor], torch.Tensor]):
         self.base_transform = base_transform
 
     def __call__(self, sample: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         img = sample["image"]
-        masks = sample["masks"]
+        masks = {k: v for k, v in sample["masks"].items()}
 
         if self.base_transform:
             img = self.base_transform(img)
@@ -99,7 +100,9 @@ class WingPatternDataset(Dataset):
         image_dir: str,
         masks_dir: str,
         # metadata_dict: Dict[str, Any],
-        transform: Optional[callable] = ResizeToLongestSide(),
+        transform: Optional[
+            Callable[[torch.Tensor], torch.Tensor]
+        ] = ResizeToLongestSide(),
         config=_GLOBAL_CONFIGS,
     ):
         super().__init__()
@@ -117,7 +120,7 @@ class WingPatternDataset(Dataset):
         self.expected_heads = set(self.config.out_channels.keys())
         self.mask_ids = []
         for img_id in self.image_ids:
-            # TODO: re-running glob for each image seems inefficient; we could
+            # FIXME: re-running glob for each image seems inefficient; we could
             # scan the directory once and try to match the filenames instead.
             is_valid, masks = self.find_matching_masks(img_id, self.masks_dir)
             self.valid.append(is_valid)
@@ -130,6 +133,10 @@ class WingPatternDataset(Dataset):
         self.mask_ids = [
             masks for masks, valid in zip(self.mask_ids, self.valid) if valid
         ]
+
+        # guard against empty dataset
+        if len(self.image_ids) == 0:
+            raise ValueError("No valid images found and dataset is empty.")
 
     def find_matching_masks(self, img_id: str, mask_dir) -> Tuple[bool, Dict[str, str]]:
         """
@@ -190,7 +197,15 @@ class WingPatternDataset(Dataset):
         masks = {}
         for mask_id, mask_path in masks_paths.items():
             mask = imread(mask_path)
-            masks[mask_id] = torch.from_numpy(mask).unsqueeze(0).float()
+            # ----- guard against (0, 255) -----
+            if self.config.out_channels[mask_id] > 1:
+                mask_tensor = torch.from_numpy(mask).unsqueeze(0).long()  # multi-class
+            else:
+                mask_tensor = (
+                    (torch.from_numpy(mask) > 0).unsqueeze(0).float()
+                )  # binary
+            # ----------------------------------
+            masks[mask_id] = mask_tensor
 
         sample = {
             "image": image_tensor,
@@ -236,7 +251,9 @@ class HopperZarrDataset(Dataset):
         zarr_path: str,
         pyramid_level: int = 0,
         include_metadata: bool = True,
-        transform: Optional[callable] = ResizeToLongestSide(),
+        transform: Optional[
+            Callable[[torch.Tensor], torch.Tensor]
+        ] = ResizeToLongestSide(),
         configs=_GLOBAL_CONFIGS,
     ):
         super().__init__()
@@ -259,7 +276,7 @@ class HopperZarrDataset(Dataset):
         self.zarr_root.visititems(find_rgb_images)
 
         # debugging
-        print(f"found {len(self.image_paths)} images in {zarr_path}")
+        # print(f"found {len(self.image_paths)} images in {zarr_path}")
 
     def __len__(self):
         return len(self.image_paths)
@@ -287,7 +304,7 @@ class HopperZarrDataset(Dataset):
                     f"failed to retrieve metadata from {self.zarr_root} for index {idx}"
                 ) from e
         else:
-            metadata = None
+            metadata = {}
 
         output = {"image": image_tensor, "masks": {}, "id": idx, "meta": metadata}
 
