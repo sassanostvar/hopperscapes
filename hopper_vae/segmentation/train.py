@@ -25,7 +25,7 @@ from hopper_vae.segmentation.models import HopperNetLite
 
 """
 Checklist: 
-- [ ] add validation
+- [x] add validation
 - [x] add CLI
 - [x] set up configs yaml
 - [x] test on GPUs

@@ -171,9 +171,9 @@ if __name__ == "__main__":
         description="Apply model to given image and save outputs to disk."
     )
 
-    arg_parser.add_argument("--image-path", required=True, help="Path to image file.")
+    arg_parser.add_argument("--image_path", required=True, help="Path to image file.")
     arg_parser.add_argument(
-        "--checkpoint-path", required=True, help="Path to model checkpoint."
+        "--checkpoint_path", required=True, help="Path to model checkpoint."
     )
     arg_parser.add_argument(
         "--device", required=True, help="Device to use for inference."
@@ -182,7 +182,7 @@ if __name__ == "__main__":
         "--overwrite", action="store_true", help="Overwrite any existing outputs."
     )
     arg_parser.add_argument(
-        "--file-extension",
+        "--file_extension",
         default="png",
         help="File extension for the outputs (default is PNG).",
     )
