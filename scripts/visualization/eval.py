@@ -2,10 +2,6 @@
 Apply a pretrained checkpoint to sample data and save the output visualizations.
 """
 
-# import sys
-# sys.path.append("../hopperscapes")
-
-
 import argparse
 import os
 
@@ -31,7 +27,7 @@ def visualize_predictions(sample, masks, output):
     fig, ax = plt.subplots(nrows=2, ncols=len(masks), figsize=(4, 2))
 
     import numpy as np
-    from skimage.measure import find_contours, label, regionprops
+    from skimage.measure import find_contours, label
 
     # show image
     for axi in ax.flatten():
