@@ -1,11 +1,11 @@
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from skimage.io import imread
 
 from hopper_vae.segmentation.dataset import preprocess
+
+from pathlib import Path
 
 TEST_DATA_PATH = (
     Path(__file__).parent.parent / "test_data" / "LD_F_TC_02024_0024_left_forewing.jpg"
