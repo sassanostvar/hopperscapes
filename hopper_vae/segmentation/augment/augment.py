@@ -1,6 +1,6 @@
 """
 Prepare augmented datasets and write to disk.
-(See _augment_funcs for details of transforms.)
+(See augment_funcs.py for details of transforms.)
 """
 
 import argparse
@@ -14,18 +14,11 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from hopper_vae.segmentation.augment._augment_funcs import (
+from hopper_vae.segmentation.augment.augment_funcs import (
     random_aug,
     random_blur_whole_image,
 )
 from hopper_vae.segmentation.dataset import WingPatternDataset
-
-"""
-Checklist:
-- [ ] implement tile-wise blur
-- [ ] implement focal blur
-- [ ] implement tile-wise color inversion
-"""
 
 
 @dataclass

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from skimage import img_as_float32
 
-from hopper_vae.segmentation.augment._augment_funcs import (
+from hopper_vae.segmentation.augment.augment_funcs import (
     random_blur_whole_image,
     adjust_brightness,
     adjust_color,
