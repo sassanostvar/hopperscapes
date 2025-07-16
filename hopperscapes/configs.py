@@ -1,4 +1,9 @@
+"""
+Configurations for segmentation model architecture, inputs, loss functions, and training.
+"""
+
 from dataclasses import dataclass, field
+from typing import Dict
 
 
 @dataclass
@@ -7,22 +12,26 @@ class SegmentationModelConfigs:
     Configuration for model training
     """
 
-    model_name: str = "test_model"
-    savedir: str = "./outputs/models"
-    device: str = "cpu"
-    square_image_size = 512
-    convert_to_hsv = False
+    model_name: str = "hopperscapes_demo"
+    savedir: str = "./outputs/demo/models"
+    square_image_size: int = 512  # -> (512x512) inputs
+    convert_to_hsv: bool = False
+
+    in_channels: int = 3  # RGB, HSV, ...
 
     # model heads and channel counts
-    out_channels = {
-        "wing": 1,
-        "veins": 1,
-        "spots": 1,
-        "domains": 3,  # 2 + background
-    }
-    num_groups = 1  # for GroupNorm
+    out_channels: Dict[str, int] = field(
+        default_factory=lambda: {
+            "wing": 1,
+            "veins": 1,
+            "spots": 1,
+            "domains": 3,  # 2 + background
+        }
+    )
+    num_groups: int = 1  # for GroupNorm
 
     # training configs
+    device: str = "cpu"
     batch_size: int = 4
     valid_split: float = 0.2
     random_seed: int = 42
@@ -41,55 +50,79 @@ class SegmentationModelConfigs:
     max_grad_norm: float = 1.0
 
     # composite loss weights
-    total_loss_weights = {
-        "wing": 1.0,
-        "veins": 1.0,
-        "spots": 1.0,
-        "domains": 1.0,
-        # "bricks": 1.0,
-    }
+    total_loss_weights: Dict[str, float] = field(
+        default_factory=lambda: {
+            "wing": 1.0,
+            "veins": 1.0,
+            "spots": 1.0,
+            "domains": 1.0,
+        }
+    )
 
-    # Dic thresholds to freeze heads
-    dice_thresholds_to_freeze_heads = {
-        "wing": 1.0,
-        "veins": 0.95,
-        "spots": 0.95,
-        "domains": 0.95,
-    }
+    # Dice score thresholds to freeze heads
+    dice_thresholds_to_freeze_heads: Dict[str, float] = field(
+        default_factory=lambda: {
+            "wing": 1.0,
+            "veins": 0.95,
+            "spots": 0.95,
+            "domains": 0.95,
+        }
+    )
 
     # per-head loss function configs
-    loss_function_configs = {
-        "wing": {
-            "bce": {"weight": 1.0, "params": {"pos_weight": 5.0}},
-            "soft_dice": {"weight": 1.0, "params": {}},
-        },
-        "veins": {
-            "bce": {"weight": 0.5, "params": {"pos_weight": 100.0}},
-            "soft_dice": {"weight": 2.0, "params": {}},
-            "cldice": {"weight": 2.0, "params": {}},
-        },
-        "spots": {
-            "focal": {"weight": 1.0, "params": {"alpha": 0.85, "gamma": 2.0}},
-            "soft_dice": {"weight": 1.0, "params": {}},
-        },
-        "domains": {
-            "ce": {"weight": 1.0, "params": {}},
-        },
-    }
+    loss_function_configs: Dict[str, Dict] = field(
+        default_factory=lambda: {
+            "wing": {
+                "bce": {"weight": 1.0, "params": {"pos_weight": 5.0}},
+                "soft_dice": {"weight": 1.0, "params": {}},
+            },
+            "veins": {
+                "bce": {"weight": 0.5, "params": {"pos_weight": 100.0}},
+                "soft_dice": {"weight": 2.0, "params": {}},
+                "cldice": {"weight": 2.0, "params": {}},
+            },
+            "spots": {
+                "focal": {"weight": 1.0, "params": {"alpha": 0.85, "gamma": 2.0}},
+                "soft_dice": {"weight": 1.0, "params": {}},
+            },
+            "domains": {
+                "ce": {"weight": 1.0, "params": {}},
+            },
+        }
+    )
 
-    freeze_heads = {
-        "wing": False,
-        "veins": False,
-        "spots": False,
-        "domains": False,
-    }
+    # training dynamics
+    freeze_heads: Dict[str, bool] = field(
+        default_factory=lambda: {
+            "wing": False,
+            "veins": False,
+            "spots": False,
+            "domains": False,
+        }
+    )
 
-    dice_scores_to_track = {
-        "wing": "soft_dice",
-        "veins": "cldice",
-        "spots": "soft_dice",
-        "domains": "soft_dice",
-    }
+    # record-keeping
+    dice_scores_to_track: Dict[str, str] = field(
+        default_factory=lambda: {
+            "wing": "soft_dice",
+            "veins": "cldice",
+            "spots": "soft_dice",
+            "domains": "soft_dice",
+        }
+    )
+
+    def to_yaml(self, yaml_path: str) -> None:
+        """
+        Serialize current configs and save to YAML.
+
+        Args:
+            yaml_path (str): Savepath for YAML file.
+        """
+        import yaml
+        from dataclasses import asdict
+
+        with open(yaml_path, "w") as f:
+            yaml.safe_dump(asdict(self), f, sort_keys=False)
 
     @staticmethod
     def from_yaml(yaml_path: str) -> "SegmentationModelConfigs":

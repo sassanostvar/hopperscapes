@@ -1,14 +1,15 @@
-model_name: "hopper_segmentation_model"
-savedir: "./outputs/hopper_models"
+model_name: "hopperscapes_demo"
+savedir: "./outputs/demo/models"
 device: "cpu"
-square_image_size: 1024
+square_image_size: 512
 convert_to_hsv: false
 
+in_channels: 3
 out_channels:
   wing: 1
   veins: 1
   spots: 1
-  domains: 3
+  domains: 3 # 2 classes + background
 
 num_groups: 1
 batch_size: 4

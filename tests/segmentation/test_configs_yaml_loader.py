@@ -6,7 +6,7 @@ YAML_FILEPATH = Path(__file__).parent.parent.parent / "hopperscapes" / "configs.
 
 
 @pytest.mark.unit
-def test_config_loader(debug=False):
+def test_configs_yaml_loader(debug=False):
     """
     Test configuration loading from YAML file.
     """
