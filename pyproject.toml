@@ -8,7 +8,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hopperscapes"
-packages = ['hopperscapes']
 version = "0.1.0"
 description = "Morphometry and generative modeling of insect wings"
 readme = "README.md"
