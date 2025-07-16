@@ -287,6 +287,10 @@ class HopperNetCompositeLoss(nn.Module):
         if inputs.keys() != targets.keys():
             raise ValueError("Predictions and target must have the same keys.")
 
+        # None weights default to all 1.0's
+        if weights is None:
+            weights = {head: 1. for head in inputs}
+
         total_loss = 0.0
         head_losses = {}
 
