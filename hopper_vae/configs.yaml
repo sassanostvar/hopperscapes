@@ -51,9 +51,9 @@ loss_function_configs:
       params: {}
   veins:
     bce:
-      weight: 0.5
+      weight: 0.3
       params:
-        pos_weight: 100.0
+        pos_weight: 50.0
     soft_dice:
       weight: 2.0
       params: {}

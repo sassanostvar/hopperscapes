@@ -74,8 +74,6 @@ class SegmentationModelConfigs:
         },
         "domains": {
             "ce": {"weight": 1.0, "params": {}},
-            # "bce": {"weight": 1.0, "params": {"pos_weight": 1.0}},
-            # "soft_dice": {"weight": 1.0, "params": {}},
         },
     }
 
