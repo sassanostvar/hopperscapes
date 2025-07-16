@@ -3,7 +3,7 @@ Use a pre-trained model in inference on a given image.
 """
 
 import argparse
-from typing import Dict
+from typing import Dict, Callable
 
 import numpy as np
 import torch
@@ -45,7 +45,7 @@ def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:
     model = models.HopperNetLite(**model_configs)
 
     try:
-        model.load_state_dict(torch.load(checkpoint_path)["model_state_dict"])
+        model.load_state_dict(checkpoint["model_state_dict"])
     except Exception as e:
         raise ValueError(
             f"Could not load model_state_dict from {checkpoint_path}"
@@ -59,7 +59,7 @@ def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:
 def preprocess_image(
     image_path: str,
     device: str = "cpu",
-    transform=T.ToTensor(),
+    transform: Callable[[torch.Tensor], torch.Tensor] = T.ToTensor(),
 ) -> torch.Tensor:
     """
     Prepare image for inference.
@@ -149,19 +149,20 @@ def main(args):
     image_path = args.image_path
     checkpoint_path = args.checkpoint_path
     device = args.device
-    savepath = args.savepath
-    overwrite = args.rewrite
+    output_dir = args.output_dir
+    overwrite = args.overwrite
     extension = args.file_extension
 
-    os.makedirs(savepath, exist_ok=overwrite)
+    os.makedirs(output_dir, exist_ok=overwrite)
 
-    record_id = image_path.split("/")[-1].split(".")[0]
+    # record_id = image_path.split("/")[-1].split(".")[0]
+    record_id = os.path.splitext(os.path.basename(image_path))[0]
 
     predictions = infer(image_path, checkpoint_path, device)
 
     for head_name, prediction in predictions.items():
         head_filepath = os.path.join(
-            savepath, "{record_id}_seg_{head_name}.{extension}"
+            output_dir, f"{record_id}_seg_{head_name}.{extension}"
         )
         imsave(head_filepath, prediction)
 
@@ -176,7 +177,10 @@ if __name__ == "__main__":
         "--checkpoint_path", required=True, help="Path to model checkpoint."
     )
     arg_parser.add_argument(
-        "--device", required=True, help="Device to use for inference."
+        "--output_dir", required=True, help="Path to output directory."
+    )
+    arg_parser.add_argument(
+        "--device", default="cpu", help="Device to use for inference."
     )
     arg_parser.add_argument(
         "--overwrite", action="store_true", help="Overwrite any existing outputs."
