@@ -6,6 +6,9 @@
 # csv's 
 *.csv
 
+# text files
+*.txt
+
 # notebooks
 notebooks/*.ipynb
 
