@@ -1,8 +1,7 @@
 import numpy as np
 from scipy.ndimage import rotate
 from skimage.transform import resize
-from skimage.color import rgb2hsv, hsv2rgb
-
+from skimage.color import rgb2hsv
 
 def convert_to_hsv(image):
     """

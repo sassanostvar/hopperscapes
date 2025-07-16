@@ -195,7 +195,7 @@ class HopperNetTrainer:
             # model heads based on dice scores
             if self.num_epochs > 1:
                 for head_name, threshold in self.threshold_dice_scores.items():
-                    if not head_name in self.dice_scores:
+                    if head_name not in self.dice_scores:
                         continue
 
                     if self.freeze_heads[head_name] is True:

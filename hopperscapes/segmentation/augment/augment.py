@@ -58,7 +58,9 @@ def export_augmented_dataset(
     img_dir.mkdir(parents=True, exist_ok=True)
 
     if aug_fn is None:
-        aug_fn = lambda x: x
+        # aug_fn = lambda x: x
+        def aug_fn(x):
+            return x
 
     for idx in tqdm(range(len(dataset)), desc="Exporting"):
         sample = dataset[idx]
