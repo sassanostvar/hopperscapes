@@ -1,6 +1,6 @@
 import pytest
 import torch
-from hopper_vae.segmentation.loss import (
+from hopperscapes.segmentation.loss import (
     soft_dice_loss,
     soft_dice_loss_with_gating,
     focal_loss_with_logits,

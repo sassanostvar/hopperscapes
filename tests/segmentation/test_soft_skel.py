@@ -8,7 +8,7 @@ import torch
 from skimage.io import imread
 from skimage.morphology import binary_dilation, binary_erosion, disk, skeletonize, thin
 
-from hopper_vae.segmentation.loss import soft_skel
+from hopperscapes.segmentation.loss import soft_skel
 
 TEST_IMAGE = (
     Path(__file__).parent.parent / "test_data" / "LD_F_TC_02024_0024_left_forewing.jpg"

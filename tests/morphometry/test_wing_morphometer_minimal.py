@@ -5,7 +5,7 @@ import pytest
 def test_wing_morphometer_io():
     import numpy as np
 
-    from hopper_vae.morphometry.wing import WingMorphometer
+    from hopperscapes.morphometry.wing import WingMorphometer
 
     wrong_configs = {"key": 10}
     with pytest.raises(AssertionError):
@@ -21,7 +21,7 @@ def test_wing_morphometer_io():
 def test_wing_morphometer_on_synthetic_data():
     import numpy as np
 
-    from hopper_vae.morphometry.wing import WingMorphometer, WingMorphometerConfigs
+    from hopperscapes.morphometry.wing import WingMorphometer, WingMorphometerConfigs
 
     wing_mask = np.zeros((512, 512), dtype=bool)
 
@@ -37,7 +37,7 @@ def test_wing_morphometer_on_synthetic_data():
 def test_wing_morphometer_on_noisy_synthetic_data():
     import numpy as np
 
-    from hopper_vae.morphometry.wing import WingMorphometer, WingMorphometerConfigs
+    from hopperscapes.morphometry.wing import WingMorphometer, WingMorphometerConfigs
 
     wing_mask = np.zeros((512, 512), dtype=bool)
 

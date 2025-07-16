@@ -8,7 +8,7 @@ def test_record_dataclass_minimal():
     """
     Instantiate the metadata dataclass and test the conversion methods.
     """
-    from hopper_vae.data.record import Metadata
+    from hopperscapes.data.record import Metadata
 
     metadata_obj = Metadata()
 

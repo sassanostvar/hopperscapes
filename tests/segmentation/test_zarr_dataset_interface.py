@@ -9,7 +9,7 @@ ZARR_PATH = Path(__file__).parent.parent.parent / "data" / "hopper_wings_zarr"
 def test_hopper_zarr_dataset_init():
     from torch.utils.data import Dataset
 
-    from hopper_vae.segmentation.dataset import HopperZarrDataset
+    from hopperscapes.segmentation.dataset import HopperZarrDataset
 
     ZarrDataset = HopperZarrDataset(ZARR_PATH)
     assert isinstance(ZarrDataset, Dataset)
@@ -20,7 +20,7 @@ def test_hopper_zarr_dataset_fetch_image():
     import torch
     from torch.utils.data import Dataset
 
-    from hopper_vae.segmentation.dataset import HopperZarrDataset
+    from hopperscapes.segmentation.dataset import HopperZarrDataset
 
     ZarrDataset = HopperZarrDataset(ZARR_PATH)
     assert isinstance(ZarrDataset, Dataset)
@@ -39,7 +39,7 @@ def test_hopper_zarr_dataset_fetch_image_test_transform(debug=False):
     import torch
     from torch.utils.data import Dataset
 
-    from hopper_vae.segmentation.dataset import HopperZarrDataset
+    from hopperscapes.segmentation.dataset import HopperZarrDataset
 
     # with transform
     ZarrDataset = HopperZarrDataset(ZARR_PATH)

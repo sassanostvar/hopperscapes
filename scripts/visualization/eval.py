@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 import torch
 import torchinfo
 
-from hopper_vae.segmentation.dataset import WingPatternDataset
-from hopper_vae.segmentation.models import HopperNetLite
+from hopperscapes.segmentation.dataset import WingPatternDataset
+from hopperscapes.segmentation.models import HopperNetLite
 
 # change font sizes for all text, axis labels, etc.
 plt.rcParams.update({"font.size": 5})

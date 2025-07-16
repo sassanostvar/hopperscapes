@@ -7,8 +7,8 @@ import torch
 from skimage.io import imread
 from torchinfo import summary
 
-from hopper_vae.imageproc import preprocess
-from hopper_vae.segmentation.models import HopperNetLite
+from hopperscapes.imageproc import preprocess
+from hopperscapes.segmentation.models import HopperNetLite
 
 TEST_DATA_PATH = (
     Path(__file__).parent.parent / "test_data" / "LD_F_TC_02024_0024_left_forewing.jpg"
@@ -39,7 +39,7 @@ def test_network_forward_pass(debug=False):
     # Convert to tensor
     sample_image = torch.from_numpy(sample_image).float()
 
-    from hopper_vae.configs import SegmentationModelConfigs
+    from hopperscapes.configs import SegmentationModelConfigs
 
     heads = SegmentationModelConfigs().out_channels
 

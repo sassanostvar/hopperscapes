@@ -3,7 +3,7 @@ import pytest
 from skimage.io import imread
 from skimage.draw import disk
 
-from hopper_vae.imageproc.preprocess import (
+from hopperscapes.imageproc.preprocess import (
     convert_to_hsv,
     resize_image,
     make_square,

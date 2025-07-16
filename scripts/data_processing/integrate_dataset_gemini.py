@@ -51,7 +51,7 @@ from PIL import Image, ExifTags
 # project imports - assumes src.record.Metadata is importable via PYTHONPATH
 # -----------------------------------------------------------------------------
 try:
-    from hopper_vae.data.record import (
+    from hopperscapes.data.record import (
         ContainerType,
         ImagingInstrument,
         Metadata,

@@ -5,7 +5,7 @@ import pytest
 def test_spots_morphometer_io():
     import numpy as np
 
-    from hopper_vae.morphometry.spots import SpotsMorphometer
+    from hopperscapes.morphometry.spots import SpotsMorphometer
 
     wrong_configs = {"key": 10}
     with pytest.raises(AssertionError):
@@ -21,7 +21,7 @@ def test_spots_morphometer_io():
 def test_spots_morphometer_on_synthetic_data():
     import numpy as np
 
-    from hopper_vae.morphometry.spots import SpotsMorphometer
+    from hopperscapes.morphometry.spots import SpotsMorphometer
 
     spots_mask = np.zeros((512, 512), dtype=bool)
 
@@ -41,7 +41,7 @@ def test_spots_morphometer_on_synthetic_data():
 def test_spots_morphometer_on_synthetic_data():
     import numpy as np
 
-    from hopper_vae.morphometry.spots import SpotsMorphometer, SpotsMorphometerConfigs
+    from hopperscapes.morphometry.spots import SpotsMorphometer, SpotsMorphometerConfigs
 
     spots_mask = np.zeros((512, 512), dtype=bool)
 

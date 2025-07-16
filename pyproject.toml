@@ -7,7 +7,8 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "HopperScapes"
+name = "hopperscapes"
+packages = ['hopperscapes']
 version = "0.1.0"
 description = "Morphometry and generative modeling of insect wings"
 readme = "README.md"
@@ -29,7 +30,7 @@ test = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["hopper_vae"]
+where = ["hopperscapes"]
 
 [tool.pytest.ini_options]
 testpaths = [

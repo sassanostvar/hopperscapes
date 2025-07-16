@@ -18,10 +18,10 @@ from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from hopper_vae.configs import SegmentationModelConfigs
-from hopper_vae.segmentation import loss
-from hopper_vae.segmentation.dataset import WingPatternDataset, hopper_collate_fn
-from hopper_vae.segmentation.models import HopperNetLite
+from hopperscapes.configs import SegmentationModelConfigs
+from hopperscapes.segmentation import loss
+from hopperscapes.segmentation.dataset import WingPatternDataset, hopper_collate_fn
+from hopperscapes.segmentation.models import HopperNetLite
 
 """
 Checklist: 

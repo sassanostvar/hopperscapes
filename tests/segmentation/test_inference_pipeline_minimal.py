@@ -9,7 +9,7 @@ SAMPLE_IMAGE_PATH = (
 
 @pytest.mark.unit
 def test_inference_pipeline_checkpoint_io():
-    from hopper_vae.segmentation.infer import load_model
+    from hopperscapes.segmentation.infer import load_model
 
     # no valid checkpoint to load
     with pytest.raises(TypeError):
@@ -20,7 +20,7 @@ def test_inference_pipeline_checkpoint_io():
 def test_inference_pipeline_postprocess():
     import torch
 
-    from hopper_vae.segmentation.infer import preprocess_image
+    from hopperscapes.segmentation.infer import preprocess_image
 
     image_tensor = preprocess_image(image_path=SAMPLE_IMAGE_PATH, device="cpu")
 
@@ -32,7 +32,7 @@ def test_inference_pipeline_postprocess_single_class():
     import numpy as np
     import torch
 
-    from hopper_vae.segmentation.infer import post_process_predictions
+    from hopperscapes.segmentation.infer import post_process_predictions
 
     logits = torch.tensor([[[[4.0, -4.0], [0.0, 2.0]]]])
     res = post_process_predictions({"mask": logits})
@@ -45,7 +45,7 @@ def test_inference_pipeline_postprocess_multi_class():
     import numpy as np
     import torch
 
-    from hopper_vae.segmentation.infer import post_process_predictions
+    from hopperscapes.segmentation.infer import post_process_predictions
 
     logits = torch.tensor([[[[2.0, 2.0], [0.0, 0.0]], [[0.0, 0.0], [2.0, 2.0]]]])
     res = post_process_predictions({"seg": logits})

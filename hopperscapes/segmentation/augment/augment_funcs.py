@@ -17,7 +17,7 @@ import numpy as np
 from skimage import color, img_as_float32, img_as_ubyte
 from skimage.filters import gaussian
 
-from hopper_vae.segmentation.dataset import WingPatternDataset
+from hopperscapes.segmentation.dataset import WingPatternDataset
 
 
 def random_blur_whole_image(

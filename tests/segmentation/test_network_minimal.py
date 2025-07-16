@@ -1,8 +1,8 @@
 import pytest
 from torchinfo import summary
 
-from hopper_vae.configs import SegmentationModelConfigs
-from hopper_vae.segmentation.models import HopperNetLite
+from hopperscapes.configs import SegmentationModelConfigs
+from hopperscapes.segmentation.models import HopperNetLite
 
 
 @pytest.mark.unit

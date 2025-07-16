@@ -6,7 +6,7 @@ def test_zarr_store_class_minimal():
     """
     Test the zarr store generator class constructer
     """
-    from hopper_vae.data.zarr_store import (
+    from hopperscapes.data.zarr_store import (
         HopperWingsZarrStore,
         HopperWingsZarrStoreConfig,
     )

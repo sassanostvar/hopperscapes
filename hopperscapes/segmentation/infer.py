@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as T
 
-from hopper_vae.segmentation import models
+from hopperscapes.segmentation import models
 
 
 def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:

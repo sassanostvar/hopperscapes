@@ -8,8 +8,8 @@ import zarr
 from skimage.io import imread
 from torch.utils.data import Dataset
 
-from hopper_vae import configs
-from hopper_vae.imageproc import preprocess
+from hopperscapes import configs
+from hopperscapes.imageproc import preprocess
 
 _GLOBAL_CONFIGS = configs.SegmentationModelConfigs()
 

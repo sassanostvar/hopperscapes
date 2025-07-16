@@ -14,11 +14,11 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from hopper_vae.segmentation.augment.augment_funcs import (
+from hopperscapes.segmentation.augment.augment_funcs import (
     random_aug,
     random_blur_whole_image,
 )
-from hopper_vae.segmentation.dataset import WingPatternDataset
+from hopperscapes.segmentation.dataset import WingPatternDataset
 
 
 @dataclass

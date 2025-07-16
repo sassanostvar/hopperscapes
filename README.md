@@ -38,7 +38,7 @@ Each module's components, functions, and implementation choices are outlined in 
 
 - hopperscapes.data
 - hopperscapes.imageproc
-- [hopperscapes.segmentation](./hopper_vae/segmentation/README.md)
+- [hopperscapes.segmentation](./hopperscapes/segmentation/README.md)
 - hopperscapes.morphometry
 
 ## Sample pipelines
@@ -48,12 +48,12 @@ A typical pipeline for light microscopy data is as follows:
 <p align="center"> <code>Preprocessing -> Segmentation → Postprocessing → Morphometry</code> </p>
 
 ## Data
-Data curation for the HopperScapes project is ongoing. Part of the effort is focused on sampling established Northeast populations of _Lycorma delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are organized as specified in [hopper_vae.data.record.py](./hopper_vae/data/record.py).
+Data curation for the HopperScapes project is ongoing. Part of the effort is focused on sampling established Northeast populations of _Lycorma delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are organized as specified in [hopperscapes.data.record.py](./hopperscapes/data/record.py).
 
 Initial release of the first light microscopy dataset is planned for Summer 2025.
 
 ## Dataset structure
-Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-zarr-py) and the following specification defined in [hopper_vae/data/zarr_store.py](hopper_vae/data/zarr_store.py):
+Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-zarr-py) and the following specification defined in [hopperscapes/data/zarr_store.py](hopperscapes/data/zarr_store.py):
 
     dataset.zarr/
     └─ specimenID/                

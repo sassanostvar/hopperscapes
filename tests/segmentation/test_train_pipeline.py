@@ -33,7 +33,7 @@ def test_train_pipeline(debug=False):
     """
     Test the train loader.
     """
-    from hopper_vae.segmentation.dataset import WingPatternDataset, hopper_collate_fn
+    from hopperscapes.segmentation.dataset import WingPatternDataset, hopper_collate_fn
 
     # Create a dataset instance
     train_dataset = WingPatternDataset(
@@ -73,8 +73,8 @@ def test_train_pipeline(debug=False):
         drop_last=False,
     )
 
-    from hopper_vae.configs import SegmentationModelConfigs
-    from hopper_vae.segmentation import loss, models, train
+    from hopperscapes.configs import SegmentationModelConfigs
+    from hopperscapes.segmentation import loss, models, train
 
     c = SegmentationModelConfigs()
 

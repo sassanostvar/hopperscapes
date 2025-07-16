@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pytest
 
-from hopper_vae.segmentation.dataset import WingPatternDataset
+from hopperscapes.segmentation.dataset import WingPatternDataset
 
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "raw" / "train"
 IMAGES_DIR = DATA_DIR / "images"

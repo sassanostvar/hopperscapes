@@ -1,8 +1,8 @@
 import pytest
 from pathlib import Path
-from hopper_vae.configs import SegmentationModelConfigs
+from hopperscapes.configs import SegmentationModelConfigs
 
-YAML_FILEPATH = Path(__file__).parent.parent.parent / "hopper_vae" / "configs.yaml"
+YAML_FILEPATH = Path(__file__).parent.parent.parent / "hopperscapes" / "configs.yaml"
 
 
 @pytest.mark.unit

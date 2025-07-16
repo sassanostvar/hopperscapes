@@ -16,7 +16,7 @@ def test_train_loader(debug=False):
     """
     Test the train loader.
     """
-    from hopper_vae.segmentation.dataset import WingPatternDataset, hopper_collate_fn
+    from hopperscapes.segmentation.dataset import WingPatternDataset, hopper_collate_fn
 
     # Create a dataset instance
     dataset = WingPatternDataset(

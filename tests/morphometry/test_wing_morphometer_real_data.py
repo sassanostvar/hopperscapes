@@ -14,7 +14,7 @@ def test_wing_morphometer_on_real_data():
     import numpy as np
     from skimage.io import imread
 
-    from hopper_vae.morphometry.wing import WingMorphometer, WingMorphometerConfigs
+    from hopperscapes.morphometry.wing import WingMorphometer, WingMorphometerConfigs
 
     wing_mask = imread(WING_MASK_FILEPATH)
 

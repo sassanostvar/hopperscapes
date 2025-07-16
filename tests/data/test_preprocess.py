@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from skimage.io import imread
 
-from hopper_vae.segmentation.dataset import preprocess
+from hopperscapes.segmentation.dataset import preprocess
 
 from pathlib import Path
 

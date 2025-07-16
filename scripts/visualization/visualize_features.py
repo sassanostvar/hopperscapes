@@ -37,8 +37,8 @@ def visualize_filters_concise(model, layer_name=None, num_filters=8):
 if __name__ == "__main__":
     import os
     import glob
-    from hopper_vae.segmentation.models import HopperNetLite
-    from hopper_vae.segmentation.data_io import WingPatternDataset
+    from hopperscapes.segmentation.models import HopperNetLite
+    from hopperscapes.segmentation.data_io import WingPatternDataset
 
     model_dir = "./outputs/models/hopper_net_aug2_test4"
     checkpoints_dir = os.path.join(model_dir, "checkpoints")

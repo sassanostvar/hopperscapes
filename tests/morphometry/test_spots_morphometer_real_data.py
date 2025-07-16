@@ -14,7 +14,7 @@ def test_spots_morphometer_on_real_data(debug=False):
     import numpy as np
     from skimage.io import imread
 
-    from hopper_vae.morphometry.spots import SpotsMorphometer, SpotsMorphometerConfigs
+    from hopperscapes.morphometry.spots import SpotsMorphometer, SpotsMorphometerConfigs
 
     spots_mask = imread(SPOTS_MASK_FILEPATH)
 

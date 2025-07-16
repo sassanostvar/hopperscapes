@@ -7,7 +7,7 @@ def test_reisze_synthetic_binary_mask():
     """
     Test resize image on synthetic data and verify mask area fraction before and after.
     """
-    from hopper_vae.imageproc.preprocess import resize_image
+    from hopperscapes.imageproc.preprocess import resize_image
 
     test_image = np.zeros((1200, 1200), dtype=bool)
     test_image[300:900, 300:900] = True

@@ -300,7 +300,7 @@ def main():
     """
     Show model summary for a given input shape.
     """
-    from hopper_vae.configs import SegmentationModelConfigs
+    from hopperscapes.configs import SegmentationModelConfigs
 
     configs = SegmentationModelConfigs()
     model = HopperNetLite(

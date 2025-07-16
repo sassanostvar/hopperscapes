@@ -14,7 +14,7 @@ Layout
           ├─ rgb/
           └─ .attrs
 
-Metadata are defined in hopper_vae/data/record.py and are stored in the
+Metadata are defined in hopperscapes/data/record.py and are stored in the
 Zarr store as attributes of the group corresponding to the image.
 """
 
