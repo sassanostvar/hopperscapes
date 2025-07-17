@@ -12,7 +12,7 @@ def test_inference_pipeline_checkpoint_io():
     from hopperscapes.segmentation.infer import load_model
 
     # no valid checkpoint to load
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         model = load_model("./checkpoint.pth", device="cpu")
 
 
@@ -20,9 +20,10 @@ def test_inference_pipeline_checkpoint_io():
 def test_inference_pipeline_postprocess():
     import torch
 
-    from hopperscapes.segmentation.infer import preprocess_image
+    from hopperscapes.segmentation.infer import preprocess_image, load_image
 
-    image_tensor = preprocess_image(image_path=SAMPLE_IMAGE_PATH, device="cpu")
+    image_arr = load_image(SAMPLE_IMAGE_PATH)
+    image_tensor = preprocess_image(image_arr, device="cpu")
 
     assert isinstance(image_tensor, torch.Tensor)
 

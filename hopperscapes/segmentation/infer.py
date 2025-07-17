@@ -3,12 +3,14 @@ Use a pre-trained model in inference on a given image.
 """
 
 import argparse
-from typing import Dict, Callable
+from typing import Dict, Callable, Union
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
+
+from pathlib import Path
 
 from hopperscapes.segmentation import models
 
@@ -16,31 +18,51 @@ from hopperscapes.segmentation import models
 def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:
     """
     Load model from checkpoint.
+    Args:
+        checkpoint_path (str): Path to the model checkpoint.
+        device (str): Device to load the model on (default is "cpu").
+    Returns:
+        nn.Module: Loaded model.
     """
+    if not isinstance(checkpoint_path, (str, Path)):
+        raise TypeError(
+            f"checkpoint_path should be a string or Path, got {type(checkpoint_path)}"
+        )
     try:
         checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
     except Exception as e:
-        raise TypeError(f"Failed to load model at {checkpoint_path} to {device}") from e
+        raise ValueError(
+            f"Failed to load model at {checkpoint_path} to {device}"
+        ) from e
 
     try:
         model_configs = checkpoint["model_configs"]
     except Exception as e:
         raise ValueError(
             f"Could not recover `model_configs' from checkpoint {checkpoint_path}."
-        ) from e
+        )
 
-    assert hasattr(
-        model_configs, "num_groups"
-    ), "model_configs has no attribue `num_groups'"
-    assert hasattr(
-        model_configs, "in_channels"
-    ), "model_configs has no attribue `num_groups'"
-    assert hasattr(
-        model_configs, "out_channels"
-    ), "model_configs has no attribue `num_groups'"
-    assert hasattr(
-        model_configs, "upsample_mode"
-    ), "model_configs has no attribue `num_groups'"
+    if not isinstance(model_configs, dict):
+        raise TypeError(
+            f"model_configs should be a dictionary, got {type(model_configs)}"
+        )
+
+    if "num_groups" not in model_configs:
+        raise ValueError(
+            f"model_configs should contain `num_groups' key, got {model_configs.keys()}"
+        )
+    if "in_channels" not in model_configs:
+        raise ValueError(
+            f"model_configs should contain `in_channels' key, got {model_configs.keys()}"
+        )
+    if "out_channels" not in model_configs:
+        raise ValueError(
+            f"model_configs should contain `out_channels' key, got {model_configs.keys()}"
+        )
+    if "upsample_mode" not in model_configs:
+        raise ValueError(
+            f"model_configs should contain `upsample_mode' key, got {model_configs.keys()}"
+        )
 
     model = models.HopperNetLite(**model_configs)
 
@@ -56,21 +78,44 @@ def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:
     return model
 
 
-def preprocess_image(
-    image_path: str,
-    device: str = "cpu",
-    transform: Callable[[torch.Tensor], torch.Tensor] = T.ToTensor(),
-) -> torch.Tensor:
+def load_image(image_path: Union[str, Path]) -> np.ndarray:
     """
-    Prepare image for inference.
-    """
+    Load an image from a file path.
 
+    Args:
+        image_path (Union[str, Path]): Path to the image file.
+    Returns:
+        np.ndarray: Loaded image as a NumPy array.
+    """
     from skimage.io import imread
 
     try:
         image = imread(image_path)
     except Exception as e:
         raise ValueError(f"Could not load image at {image_path}") from e
+
+    if len(image.shape) < 2 or len(image.shape) > 3:
+        raise ValueError(f"Image at {image_path} must be 2D or 3D (grayscale or RGB).")
+
+    return image
+
+
+def preprocess_image(
+    image: np.ndarray,
+    device: str = "cpu",
+    transform: Callable[[torch.Tensor], torch.Tensor] = T.ToTensor(),
+) -> torch.Tensor:
+    """
+    Prepare image for inference.
+    Adds batch dimension and applies transformations.
+
+    Args:
+        image (np.ndarray): Input image.
+        device (str): Device to use for inference (default is "cpu").
+        transform (Callable): Transforms to apply to the image (default is ToTensor).
+    Returns:
+        torch.Tensor: Preprocessed image tensor ready for inference.
+    """
 
     image_tensor = transform(image).unsqueeze(0).to(device)
     return image_tensor
@@ -79,6 +124,15 @@ def preprocess_image(
 def run_inference(
     model: nn.Module, image_tensor: torch.Tensor
 ) -> Dict[str, torch.Tensor]:
+    """
+    Run inference on the input image tensor using the provided model.
+
+    Args:
+        model (nn.Module): The pre-trained model for inference.
+        image_tensor (torch.Tensor): Preprocessed image tensor with batch dimension.
+    Returns:
+        Dict[str, torch.Tensor]: Dictionary mapping head_name to head_logits.
+    """
     with torch.no_grad():
         outputs = model(image_tensor)
     return outputs
@@ -88,14 +142,14 @@ def post_process_predictions(
     outputs: Dict[str, torch.Tensor], binary_threshold: float = 0.5
 ) -> Dict[str, np.ndarray]:
     """
-    Convert logits to binary masks. Use sigmoid for single-class outputs and softmax for multi-class
-    outputs.
+    Convert logits to binary masks. Use sigmoid for single-class
+    outputs and softmax for multi-class outputs.
 
     Args:
         outputs (Dict[str, torch.Tensor]): Dictionary mapping head_name -> head_logits.
         binary_threshold (float): Threshold value to use to binarize probabilities (default is 0.5).
 
-    Outputs:
+    Returns:
         Dict[str, np.ndarray]: Dictionary mapping head_name -> numpy array of head mask(s).
     """
     processed_outputs = {}
@@ -130,7 +184,9 @@ def infer(
 
     model = load_model(checkpoint_path, device)
 
-    image_tensor = preprocess_image(image_path, device)
+    image_arr = load_image(image_path)
+
+    image_tensor = preprocess_image(image_arr, device)
 
     outputs = run_inference(model, image_tensor)
 
@@ -155,7 +211,6 @@ def main(args):
 
     os.makedirs(output_dir, exist_ok=overwrite)
 
-    # record_id = image_path.split("/")[-1].split(".")[0]
     record_id = os.path.splitext(os.path.basename(image_path))[0]
 
     predictions = infer(image_path, checkpoint_path, device)
