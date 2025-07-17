@@ -15,7 +15,7 @@
 
 ![Demo](assets/wings.gif)
 
-Planthoppers have evolved intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an effort toward representation learning of the underlying _morpho-chromospace_ linking the evolving tegminal material ecology to shared developmental roots and simple biophysical principles.
+Planthoppers have evolved intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an effort toward representation learning of the underlying _morpho-chromospace_, linking the evolving tegminal material ecology to shared developmental roots and simple biophysical principles.
 
 This repository is a toolset for quantitative analysis of light microscopy and photographic images of tegmina, including utilities for dataset management, image processing, semantic segmentation, morphometry, and reconstruction.
 
@@ -71,7 +71,7 @@ Local sources of _L. delicatula_ specimens include Morningside Heights, New York
 
 ## Workflows
 
-We use a set of automated segmentation workflows, described in [hopperscapes.segmentation](./hopperscapes/segmentation/README.md), to preprocess, register, and standardize the light microscopy dataset as demonstrated below.
+We use automated segmentation workflows, described in [hopperscapes.segmentation](./hopperscapes/segmentation/README.md), to preprocess, register, and standardize the light microscopy dataset as demonstrated below.
 
 <p align="center"><img src="assets/wing_alignment.gif" alt="normalization" style="width: 100%; max-width: 500px; border-radius: 0px;"></p>
 
