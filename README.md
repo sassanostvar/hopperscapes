@@ -4,22 +4,23 @@
 ![Python](https://img.shields.io/badge/python-3.9+-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-pytest-green)
-![Coverage](https://img.shields.io/badge/coverage-71%25-yellowgreen)
+![Coverage](https://img.shields.io/badge/coverage-74%25-yellowgreen)
 ![Status](https://img.shields.io/badge/status-alpha-orange)
+![CI](https://github.com/sassanostvar/hopperscapes/actions/workflows/tests.yml/badge.svg)
 
-> ** Demo Alpha Release - July 2025 **
+> ** Demo Alpha - July 2025 **
 ## Overview
 
 <p align='center'>Mapping and representation learning of forewing morphology and patterning in planthoppers</p>
 
 ![Demo](assets/wings.gif)
 
-Planthoppers have evolved remarkably intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an ongoing effort toward representation learning of the underlying _morpho-chromospace_.
+Planthoppers have evolved intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an effort toward representation learning of the underlying _morpho-chromospace_ linking the evolving tegminal material ecology to shared developmental roots and simple biophysical principles.
 
-This repository provides the components of an end-to-end pipeline for quantitative analysis of light microscopy and photographic images of tegmina, including utilities for dataset management, image processing, semantic segmentation, and morphometry.
+This repository is a toolset for quantitative analysis of light microscopy and photographic images of tegmina, including utilities for dataset management, image processing, semantic segmentation, morphometry, and reconstruction.
 
 ## Repository Structure
-[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is a growing toolset for dataset management, image pre-processing, segmentation, post-processing, and quantification of planthopper forewing compositions. The repository is organized as follows:
+This repository is organized as follows:
 
     .
     ├── hopperscapes
@@ -41,19 +42,11 @@ Each module's components, functions, and implementation choices are outlined in 
 - [hopperscapes.segmentation](./hopperscapes/segmentation/README.md)
 - hopperscapes.morphometry
 
-## Sample pipelines
-
-A typical pipeline for light microscopy data is as follows:
-
-<p align="center"> <code>Preprocessing -> Segmentation → Postprocessing → Morphometry</code> </p>
-
 ## Data
-Data curation for the HopperScapes project is ongoing. Part of the effort is focused on sampling established Northeast populations of _Lycorma delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are organized as specified in [hopperscapes.data.record.py](./hopperscapes/data/record.py).
-
-Initial release of the first light microscopy dataset is planned for Summer 2025.
+Data curation for the project is ongoing. Part of the effort is focused on sampling established Northeast populations of _L. delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are recorded and organized as specified in [hopperscapes.data.record.py](./hopperscapes/data/record.py).
 
 ## Dataset structure
-Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-zarr-py) and the following specification defined in [hopperscapes/data/zarr_store.py](hopperscapes/data/zarr_store.py):
+Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-zarr-py) according to the specifications in [hopperscapes/data/zarr_store.py](hopperscapes/data/zarr_store.py):
 
     dataset.zarr/
     └─ specimenID/                
@@ -71,32 +64,31 @@ Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-
                 │   ...                
                 └─ .attrs
 
-Raw images cast to other color spaces and segmentation masks can be appended to the same store.
+This basic structure is expanded to incorporate segmentations, reconstructions, and other derived representations.
 
 ## Data Sources
-Local sources include Morningside Heights, New York City and Hudson River Valley, New York.
+Local sources of _L. delicatula_ specimens include Morningside Heights, New York City and Hudson River Valley, New York. Web sources of the cross-species dataset include Wikipedia Commons, iNaturalist, and FLOW hemiptera databases.
 
-Web sources include Wikipedia Commons, iNaturalist, and FLOW hemiptera databases.
+## Workflows
 
+We use a set of automated segmentation workflows, described in [hopperscapes.segmentation](./hopperscapes/segmentation/README.md), to preprocess, register, and standardize the light microscopy dataset as demonstrated below.
 
-## Current Status & Roadmap
+<p align="center"><img src="assets/wing_alignment.gif" alt="normalization" style="width: 100%; max-width: 500px; border-radius: 0px;"></p>
 
-We are developing HopperScapes publicly. Our planned next steps for Summer 2025 are:
-    
-- Release the first light‑microscopy dataset of Lycorma delicatula specimens, along with proofread segmentations and trained model checkpoints.
-- Benchmark self‑supervised pre‑training on a cross‑species dataset.
-- Improve segmentation performance for venation networks.
+## Status & Roadmap
+
+We are developing the project in public. In 2024, we reached the 1500 specimen mark, with 200 specimens (400 samples) already imaged and preprocessed by Q1 2025. A priority for Q3 2025 is to release the first _L. delicatula_ light microscopy dataset, along with proof-read segmentations and model checkpoints.
 
 For more details on the project roadmap, please visit [STATUS.md](STATUS.md).
 
 ## Credits
-[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) was conceived, designed, planned, and executed by [Sassan Ostvar](https://sassanostvar.github.io).
-
-## Contact
-Contributions and collaborations are most welcome. Please reach out to [Sassan Ostvar](https://sassanostvar.github.io).
+[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) was conceived, designed, planned, and executed by [Sassan Ostvar](https://sassanostvar.github.io). We are grateful to Columbia University Public Safety and members of the Mechanical Engineering Graduate Association (MEGA) for assistance during sample collection.
 
 ## Citation
 _forthcoming_
+
+## Contact
+Contributions and collaborations are most welcome. Please reach out to [Sassan Ostvar](https://sassanostvar.github.io).
 
 ## Related Work
 - Ronellenfitsch, Henrik, Jana Lasser, Douglas C. Daly, and Eleni Katifori. "Topological phenotypes constitute a new dimension in the phenotypic space of leaf venation networks." PLoS computational biology 11, no. 12 (2015): e1004680.
