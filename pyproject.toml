@@ -29,7 +29,8 @@ test = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["hopperscapes"]
+where = ["."]
+include = ['hopperscapes*']
 
 [tool.pytest.ini_options]
 testpaths = [
