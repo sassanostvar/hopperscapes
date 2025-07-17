@@ -21,7 +21,7 @@ def test_wing_morphometer_io():
 def test_wing_morphometer_on_synthetic_data():
     import numpy as np
 
-    from hopperscapes.morphometry.wing import WingMorphometer, WingMorphometerConfigs
+    from hopperscapes.morphometry.wing import WingMorphometer
 
     wing_mask = np.zeros((512, 512), dtype=bool)
 

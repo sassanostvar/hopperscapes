@@ -12,18 +12,11 @@ MASKS_DIR = (
 
 @pytest.mark.integration
 def test_composite_loss_func_minimal():
-    from hopperscapes.segmentation.dataset import WingPatternDataset, hopper_collate_fn
-
-    # Create a dataset instance
-    dataset = WingPatternDataset(
-        image_dir=IMAGES_DIR,
-        masks_dir=MASKS_DIR,
-    )
-
     from hopperscapes.configs import SegmentationModelConfigs
     from hopperscapes.segmentation.loss import HopperNetCompositeLoss
 
+    # init class with default configs
     configs = SegmentationModelConfigs()
-    composite_loss = HopperNetCompositeLoss(
+    _ = HopperNetCompositeLoss(
         loss_configs=configs.loss_function_configs, device="cpu"
     )

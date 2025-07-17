@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import pytest
 from skimage.io import imread
 

@@ -10,8 +10,7 @@ SPOTS_MASK_FILEPATH = (
 
 
 @pytest.mark.unit
-def test_spots_morphometer_on_real_data(debug=False):
-    import numpy as np
+def test_spots_morphometer_on_spots_segmentations(debug=False):
     from skimage.io import imread
 
     from hopperscapes.morphometry.spots import SpotsMorphometer, SpotsMorphometerConfigs

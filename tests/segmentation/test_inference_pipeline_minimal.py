@@ -13,7 +13,7 @@ def test_inference_pipeline_checkpoint_io():
 
     # no valid checkpoint to load
     with pytest.raises(ValueError):
-        model = load_model("./checkpoint.pth", device="cpu")
+        _ = load_model("./checkpoint.pth", device="cpu")
 
 
 @pytest.mark.unit

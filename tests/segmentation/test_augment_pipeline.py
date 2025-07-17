@@ -15,7 +15,7 @@ def test_default_augment_pipeline():
     """
     Create augmented views for test data and write to disk.
     """
-    from hopperscapes.segmentation.dataset import WingPatternDataset, hopper_collate_fn
+    from hopperscapes.segmentation.dataset import WingPatternDataset
 
     # Create a dataset instance
     dataset = WingPatternDataset(

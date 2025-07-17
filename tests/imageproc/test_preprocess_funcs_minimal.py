@@ -1,16 +1,14 @@
 import numpy as np
 import pytest
-from skimage.io import imread
 from skimage.draw import disk
 
 from hopperscapes.imageproc.preprocess import (
-    convert_to_hsv,
     resize_image,
     make_square,
-    isolate_wing_mask,
-    align_wing_with_yaxis,
-    center_wing,
 )
+from hopperscapes.imageproc.masks import pick_largest_region
+from hopperscapes.imageproc.alignment import align_wing_with_yaxis, center_region
+from hopperscapes.imageproc.color import convert_to_hsv
 
 
 @pytest.fixture
@@ -44,8 +42,8 @@ def test_make_square(sample_binary_mask):
     assert padded_image.shape[0] == padded_image.shape[1]
 
 
-def test_isolate_wing_mask(sample_binary_mask):
-    isolated_mask = isolate_wing_mask(sample_binary_mask)
+def test_pick_largest_region(sample_binary_mask):
+    isolated_mask = pick_largest_region(sample_binary_mask)
     assert isolated_mask.shape == sample_binary_mask.shape
 
 
@@ -58,8 +56,8 @@ def test_align_wing_with_yaxis(sample_binary_mask):
     assert isinstance(angle, float)
 
 
-def test_center_wing(sample_binary_mask):
-    centered_image, centered_mask, shift = center_wing(
+def test_center_region(sample_binary_mask):
+    centered_image, centered_mask, shift = center_region(
         sample_binary_mask, sample_binary_mask
     )
     assert centered_image.shape == sample_binary_mask.shape

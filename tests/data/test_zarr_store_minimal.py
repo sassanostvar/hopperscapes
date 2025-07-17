@@ -12,8 +12,8 @@ def test_zarr_store_class_minimal():
     )
 
     # test init class without config (uses default configs)
-    zstore = HopperWingsZarrStore()
+    _ = HopperWingsZarrStore()
 
     # test init class with config
     configs = HopperWingsZarrStoreConfig()
-    zstore = HopperWingsZarrStore(config=configs)
+    _ = HopperWingsZarrStore(config=configs)

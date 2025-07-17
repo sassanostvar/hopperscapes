@@ -38,7 +38,7 @@ def test_spots_morphometer_on_synthetic_data():
 
 
 @pytest.mark.unit
-def test_spots_morphometer_on_synthetic_data():
+def test_spots_morphometer_on_noisy_synthetic_data():
     import numpy as np
 
     from hopperscapes.morphometry.spots import SpotsMorphometer, SpotsMorphometerConfigs

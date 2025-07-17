@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-import yaml
 
 
 @pytest.mark.unit

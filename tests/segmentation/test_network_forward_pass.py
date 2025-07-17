@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 import torch
 from skimage.io import imread
-from torchinfo import summary
 
 from hopperscapes.imageproc import preprocess
 from hopperscapes.segmentation.models import HopperNetLite
