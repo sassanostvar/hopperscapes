@@ -3,53 +3,53 @@
         ".zgroup": {
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/.zgroup": {
+        "LD_NYC_02024_0050/.zgroup": {
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/forewing/.zgroup": {
+        "LD_NYC_02024_0050/forewing/.zgroup": {
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/forewing/right/.zattrs": {
+        "LD_NYC_02024_0050/forewing/left/.zattrs": {
             "best_in_set": true,
-            "collected_by": NaN,
-            "color_profile": NaN,
+            "collected_by": "",
+            "color_profile": "",
             "color_space": "RGB",
             "container_type": "{'Unknown_conical_15ml'}",
-            "coordinates": NaN,
-            "damaged": true,
+            "coordinates": "",
+            "damaged": false,
             "date_collected": "2024-08-31",
             "date_imaged": "2025-02-25",
-            "discarded": NaN,
+            "discarded": "",
             "dried": "N",
-            "file_hash": "365f3adf3bb53e8318dd303bb76a3742c9d9f5897ddf9504066b21c3e8f84cd3",
-            "image_bit_depth": NaN,
-            "image_channels": NaN,
+            "file_hash": "e567e6289e72e27e3066ed016179663b0d16b9e52a2caa7fdc332974ec171132",
+            "image_bit_depth": "",
+            "image_channels": "",
             "image_file_ext": "jpg",
             "image_resolution": "(72.0, 72.0)",
             "image_size": "(3584, 2748, 3)",
             "image_success": true,
-            "imaged_by": NaN,
+            "imaged_by": "",
             "imaging_instrument": "AMSCOPE-SM-1TSZ-V203",
-            "live_sample": NaN,
-            "mag": NaN,
-            "notes": "damage to right forewing",
+            "live_sample": "",
+            "mag": "",
+            "notes": "",
             "obj": 0.5,
             "pixel_size_um": "(Fraction(3175, 9), Fraction(3175, 9))",
             "preserve_medium": "ethanol_70",
-            "record_id": "LD_F_NYC_02024_0049_right_forewing",
+            "record_id": "LD_F_NYC_02024_0050_left_forewing",
             "replicate_number": 1,
             "sex": "FEMALE",
             "site_code": "118/MORN",
             "species": "LD",
-            "specimen_id": "LD_NYC_02024_0049",
-            "wing_side": "right",
+            "specimen_id": "LD_NYC_02024_0050",
+            "wing_side": "left",
             "wing_type": "forewing",
             "year": 2024
         },
-        "LD_NYC_02024_0049/forewing/right/.zgroup": {
+        "LD_NYC_02024_0050/forewing/left/.zgroup": {
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/forewing/right/rgb/.zattrs": {
+        "LD_NYC_02024_0050/forewing/left/rgb/.zattrs": {
             "multiscales": [
                 {
                     "axes": [
@@ -139,7 +139,7 @@
                         }
                     ],
                     "dtype": "uint8",
-                    "name": "/LD_NYC_02024_0049/forewing/right/rgb",
+                    "name": "/LD_NYC_02024_0050/forewing/left/rgb",
                     "scale_factors": [
                         [
                             1,
@@ -156,10 +156,10 @@
                 }
             ]
         },
-        "LD_NYC_02024_0049/forewing/right/rgb/.zgroup": {
+        "LD_NYC_02024_0050/forewing/left/rgb/.zgroup": {
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/forewing/right/rgb/0/.zarray": {
+        "LD_NYC_02024_0050/forewing/left/rgb/0/.zarray": {
             "chunks": [
                 1,
                 512,
@@ -181,7 +181,7 @@
             ],
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/forewing/right/rgb/1/.zarray": {
+        "LD_NYC_02024_0050/forewing/left/rgb/1/.zarray": {
             "chunks": [
                 1,
                 512,
@@ -203,7 +203,7 @@
             ],
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/forewing/right/rgb/2/.zarray": {
+        "LD_NYC_02024_0050/forewing/left/rgb/2/.zarray": {
             "chunks": [
                 1,
                 512,
@@ -225,7 +225,7 @@
             ],
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/forewing/right/rgb/3/.zarray": {
+        "LD_NYC_02024_0050/forewing/left/rgb/3/.zarray": {
             "chunks": [
                 1,
                 512,
@@ -247,7 +247,793 @@
             ],
             "zarr_format": 2
         },
-        "LD_NYC_02024_0049/forewing/right/rgb/4/.zarray": {
+        "LD_NYC_02024_0050/forewing/left/rgb/4/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                224,
+                171
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0050/forewing/right/.zattrs": {
+            "best_in_set": true,
+            "collected_by": "",
+            "color_profile": "",
+            "color_space": "RGB",
+            "container_type": "{'Unknown_conical_15ml'}",
+            "coordinates": "",
+            "damaged": false,
+            "date_collected": "2024-08-31",
+            "date_imaged": "2025-02-25",
+            "discarded": "",
+            "dried": "N",
+            "file_hash": "3e53287fe20caf11400826bc4140ba84c3f7536309f380214d22629c5f4e5ddb",
+            "image_bit_depth": "",
+            "image_channels": "",
+            "image_file_ext": "jpg",
+            "image_resolution": "(72.0, 72.0)",
+            "image_size": "(3584, 2748, 3)",
+            "image_success": true,
+            "imaged_by": "",
+            "imaging_instrument": "AMSCOPE-SM-1TSZ-V203",
+            "live_sample": "",
+            "mag": "",
+            "notes": "",
+            "obj": 0.5,
+            "pixel_size_um": "(Fraction(3175, 9), Fraction(3175, 9))",
+            "preserve_medium": "ethanol_70",
+            "record_id": "LD_F_NYC_02024_0050_right_forewing",
+            "replicate_number": 1,
+            "sex": "FEMALE",
+            "site_code": "118/MORN",
+            "species": "LD",
+            "specimen_id": "LD_NYC_02024_0050",
+            "wing_side": "right",
+            "wing_type": "forewing",
+            "year": 2024
+        },
+        "LD_NYC_02024_0050/forewing/right/.zgroup": {
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0050/forewing/right/rgb/.zattrs": {
+            "multiscales": [
+                {
+                    "axes": [
+                        {
+                            "name": "c",
+                            "type": "channel"
+                        },
+                        {
+                            "name": "y",
+                            "type": "space"
+                        },
+                        {
+                            "name": "x",
+                            "type": "space"
+                        }
+                    ],
+                    "channel_names": [
+                        "R",
+                        "G",
+                        "B"
+                    ],
+                    "datasets": [
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        1.0,
+                                        1.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "0"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        2.0,
+                                        2.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "1"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        4.0,
+                                        4.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "2"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        8.0,
+                                        8.011661807580175
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "3"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        16.0,
+                                        16.07017543859649
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "4"
+                        }
+                    ],
+                    "dtype": "uint8",
+                    "name": "/LD_NYC_02024_0050/forewing/right/rgb",
+                    "scale_factors": [
+                        [
+                            1,
+                            2,
+                            2
+                        ],
+                        [
+                            1,
+                            2,
+                            2
+                        ]
+                    ],
+                    "version": "0.4"
+                }
+            ]
+        },
+        "LD_NYC_02024_0050/forewing/right/rgb/.zgroup": {
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0050/forewing/right/rgb/0/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                3584,
+                2748
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0050/forewing/right/rgb/1/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                1792,
+                1374
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0050/forewing/right/rgb/2/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                896,
+                687
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0050/forewing/right/rgb/3/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                448,
+                343
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0050/forewing/right/rgb/4/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                224,
+                171
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/.zgroup": {
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/.zgroup": {
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/left/.zattrs": {
+            "best_in_set": true,
+            "collected_by": "",
+            "color_profile": "",
+            "color_space": "RGB",
+            "container_type": "{'Unknown_conical_15ml'}",
+            "coordinates": "",
+            "damaged": false,
+            "date_collected": "2024-08-31",
+            "date_imaged": "2025-02-27",
+            "discarded": "",
+            "dried": "N",
+            "file_hash": "fabe50abbad63237203f3fa3e07957d1db9d22a8ee01cef4324d6a59c59b9e1a",
+            "image_bit_depth": "",
+            "image_channels": "",
+            "image_file_ext": "jpg",
+            "image_resolution": "(72.0, 72.0)",
+            "image_size": "(3584, 2748, 3)",
+            "image_success": true,
+            "imaged_by": "",
+            "imaging_instrument": "AMSCOPE-SM-1TSZ-V203",
+            "live_sample": "",
+            "mag": "",
+            "notes": "",
+            "obj": 0.5,
+            "pixel_size_um": "(Fraction(3175, 9), Fraction(3175, 9))",
+            "preserve_medium": "ethanol_70",
+            "record_id": "LD_F_NYC_02024_0076_left_forewing",
+            "replicate_number": 1,
+            "sex": "FEMALE",
+            "site_code": "118/MORN",
+            "species": "LD",
+            "specimen_id": "LD_NYC_02024_0076",
+            "wing_side": "left",
+            "wing_type": "forewing",
+            "year": 2024
+        },
+        "LD_NYC_02024_0076/forewing/left/.zgroup": {
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/left/rgb/.zattrs": {
+            "multiscales": [
+                {
+                    "axes": [
+                        {
+                            "name": "c",
+                            "type": "channel"
+                        },
+                        {
+                            "name": "y",
+                            "type": "space"
+                        },
+                        {
+                            "name": "x",
+                            "type": "space"
+                        }
+                    ],
+                    "channel_names": [
+                        "R",
+                        "G",
+                        "B"
+                    ],
+                    "datasets": [
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        1.0,
+                                        1.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "0"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        2.0,
+                                        2.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "1"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        4.0,
+                                        4.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "2"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        8.0,
+                                        8.011661807580175
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "3"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        16.0,
+                                        16.07017543859649
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "4"
+                        }
+                    ],
+                    "dtype": "uint8",
+                    "name": "/LD_NYC_02024_0076/forewing/left/rgb",
+                    "scale_factors": [
+                        [
+                            1,
+                            2,
+                            2
+                        ],
+                        [
+                            1,
+                            2,
+                            2
+                        ]
+                    ],
+                    "version": "0.4"
+                }
+            ]
+        },
+        "LD_NYC_02024_0076/forewing/left/rgb/.zgroup": {
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/left/rgb/0/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                3584,
+                2748
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/left/rgb/1/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                1792,
+                1374
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/left/rgb/2/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                896,
+                687
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/left/rgb/3/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                448,
+                343
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/left/rgb/4/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                224,
+                171
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/right/.zattrs": {
+            "best_in_set": true,
+            "collected_by": "",
+            "color_profile": "",
+            "color_space": "RGB",
+            "container_type": "{'Unknown_conical_15ml'}",
+            "coordinates": "",
+            "damaged": false,
+            "date_collected": "2024-08-31",
+            "date_imaged": "2025-02-27",
+            "discarded": "",
+            "dried": "N",
+            "file_hash": "e4d77c8f0160dd2eef9e776426d6238e986796b779b9dac83173854e15f91d20",
+            "image_bit_depth": "",
+            "image_channels": "",
+            "image_file_ext": "jpg",
+            "image_resolution": "(72.0, 72.0)",
+            "image_size": "(3584, 2748, 3)",
+            "image_success": true,
+            "imaged_by": "",
+            "imaging_instrument": "AMSCOPE-SM-1TSZ-V203",
+            "live_sample": "",
+            "mag": "",
+            "notes": "",
+            "obj": 0.5,
+            "pixel_size_um": "(Fraction(3175, 9), Fraction(3175, 9))",
+            "preserve_medium": "ethanol_70",
+            "record_id": "LD_F_NYC_02024_0076_right_forewing",
+            "replicate_number": 1,
+            "sex": "FEMALE",
+            "site_code": "118/MORN",
+            "species": "LD",
+            "specimen_id": "LD_NYC_02024_0076",
+            "wing_side": "right",
+            "wing_type": "forewing",
+            "year": 2024
+        },
+        "LD_NYC_02024_0076/forewing/right/.zgroup": {
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/right/rgb/.zattrs": {
+            "multiscales": [
+                {
+                    "axes": [
+                        {
+                            "name": "c",
+                            "type": "channel"
+                        },
+                        {
+                            "name": "y",
+                            "type": "space"
+                        },
+                        {
+                            "name": "x",
+                            "type": "space"
+                        }
+                    ],
+                    "channel_names": [
+                        "R",
+                        "G",
+                        "B"
+                    ],
+                    "datasets": [
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        1.0,
+                                        1.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "0"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        2.0,
+                                        2.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "1"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        4.0,
+                                        4.0
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "2"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        8.0,
+                                        8.011661807580175
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "3"
+                        },
+                        {
+                            "coordinateTransformations": [
+                                {
+                                    "scale": [
+                                        1.0,
+                                        16.0,
+                                        16.07017543859649
+                                    ],
+                                    "type": "scale"
+                                }
+                            ],
+                            "path": "4"
+                        }
+                    ],
+                    "dtype": "uint8",
+                    "name": "/LD_NYC_02024_0076/forewing/right/rgb",
+                    "scale_factors": [
+                        [
+                            1,
+                            2,
+                            2
+                        ],
+                        [
+                            1,
+                            2,
+                            2
+                        ]
+                    ],
+                    "version": "0.4"
+                }
+            ]
+        },
+        "LD_NYC_02024_0076/forewing/right/rgb/.zgroup": {
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/right/rgb/0/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                3584,
+                2748
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/right/rgb/1/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                1792,
+                1374
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/right/rgb/2/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                896,
+                687
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/right/rgb/3/.zarray": {
+            "chunks": [
+                1,
+                512,
+                512
+            ],
+            "compressor": {
+                "id": "zstd",
+                "level": 4
+            },
+            "dimension_separator": "/",
+            "dtype": "|u1",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                448,
+                343
+            ],
+            "zarr_format": 2
+        },
+        "LD_NYC_02024_0076/forewing/right/rgb/4/.zarray": {
             "chunks": [
                 1,
                 512,

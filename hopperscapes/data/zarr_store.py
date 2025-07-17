@@ -74,7 +74,6 @@ class HopperWingsZarrStore:
         config: HopperWingsZarrStoreConfig = None,
         records_table: pd.DataFrame = None,
     ):
-        
         self.config = config if config else self.default_config
         self.path = self.config.path
         self.root = None
@@ -125,7 +124,7 @@ class HopperWingsZarrStore:
 
             #
             if _record_id not in self.records:
-                self.records[_record_id] = augmented_row
+                self.records[_record_id] = augmented_row.fillna("").to_dict()
 
             # create per-wing-side group structure
             record_grp = (
@@ -179,7 +178,22 @@ class HopperWingsZarrStore:
         }
         record_grp.attrs.update(serialisable)
 
-        for tag, arr, dtype in (("rgb", rgb_image.transpose(2, 0, 1), "uint8"),):
+        rgb_np = rgb_image.transpose(2, 0, 1)
+
+        # wrap as Dask array
+        rgb_da_prep = da.from_array(
+            rgb_np,
+            chunks=(
+                1,
+                self.config.size_xy,
+                self.config.size_xy,
+            ),  # one channel per chunk
+        )
+
+        # force materialize
+        rgb_computed_np = rgb_da_prep.compute()
+
+        for tag, arr, dtype in (("rgb", rgb_computed_np, "uint8"),):
             comp = self._make_compressor()
 
             storage_opts = dict(
@@ -195,6 +209,7 @@ class HopperWingsZarrStore:
                 dtype=dtype,
                 scale_factors=self.config.scale,
                 storage_options=storage_opts,
+                compute=True,
             )
 
             logging.info(
@@ -239,8 +254,7 @@ class HopperWingsZarrStore:
         # consolidate metadata
         logging.info(f"consolidating metadata for {self.path}")
         store = parse_url(str(self.path), mode="a").store
-        root_grp = zarr.open_group(store)
-        zarr.consolidate_metadata(root_grp)
+        zarr.consolidate_metadata(store)
         logging.info("metadata consolidation complete.")
 
 

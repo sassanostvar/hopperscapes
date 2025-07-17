@@ -106,8 +106,8 @@ class Metadata:
     image_channels      : Optional[Tuple[int, ...]] = None
     image_bit_depth     : Optional[int]             = None
     image_file_ext      : Optional[str]             = None
-    color_space         : Optional[str]             = None
-    color_profile       : Optional[str]             = None
+    color_space         : Optional[str]             = None  # original color space
+    color_profile       : Optional[str]             = None  # original color profile
     image_resolution    : Optional[Tuple[int, int]] = None
     pixel_size_um       : Optional[Tuple[float, float]] = None
     file_hash           : Optional[str]             = None
