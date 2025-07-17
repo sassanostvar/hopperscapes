@@ -1,26 +1,24 @@
-import numpy as np
-from scipy.ndimage import rotate
-from skimage.transform import resize
-from skimage.color import rgb2hsv
+"""
+Basic image prepprocessing: padding, resizing, etc. to prepare 
+images for segmentation and analysis.
+"""
 
-def convert_to_hsv(image):
-    """
-    Convert an RGB image to HSV color space.
-    """
-    if len(image.shape) == 3 and image.shape[2] == 3:  # Check if the image is RGB
-        hsv_image = rgb2hsv(image)
-        return hsv_image
-    else:
-        raise ValueError("Input image must be an RGB image with 3 channels.")
+from numpy.typing import NDArray
 
 
 def resize_image(
-    image, target_side_length, order=0, preserve_range=True, anti_aliasing=True
+    image: NDArray,
+    target_side_length: int,
+    order: int = 0,
+    preserve_range: bool = True,
+    anti_aliasing: bool = True,
+    rebinarize: bool = True,
 ):
     """
     Resize the image to the specified height and width.
     """
-    is_binary = isinstance(image.dtype, bool)
+    from skimage.transform import resize
+
     h, w = image.shape[0], image.shape[1]
     if h > w:
         new_h = target_side_length
@@ -35,18 +33,21 @@ def resize_image(
         preserve_range=preserve_range,
         anti_aliasing=anti_aliasing,
     )
-    
+
     # re-binarize
-    if is_binary:
-        resized_image = resized_image>0
+    is_binary = isinstance(image.dtype, bool)
+    if is_binary and rebinarize:
+        resized_image = resized_image > 0
 
     return resized_image
 
 
-def make_square(image):
+def make_square(image: NDArray) -> NDArray:
     """
-    Make the image square by padding it with zeros.
+    Pad the image to make it square.
     """
+    import numpy as np
+
     h, w = image.shape[0], image.shape[1]
     if h > w:
         pad = (0, h - w)
@@ -71,48 +72,3 @@ def make_square(image):
             # constant_values=image.mean(),
         )
     return padded_image
-
-
-def isolate_wing_mask(prediction):
-    """
-    Isolate the largest connected component in the binary mask.
-    """
-    from skimage.measure import label, regionprops
-
-    labeled = label(prediction > 0)
-    regions = regionprops(labeled)
-
-    if not regions:
-        raise ValueError("No regions found in the mask.")
-
-    largest_region = max(regions, key=lambda r: r.area)
-    return labeled == largest_region.label
-
-
-def align_wing_with_yaxis(masked_gs_img, mask):
-    """
-    Align the wing with the y-axis by rotating the image and mask.
-    """
-    from skimage.measure import label, regionprops
-
-    angle = np.rad2deg(regionprops(label(mask))[0].orientation)
-    aligned_gs_img = rotate(masked_gs_img, -angle, reshape=False)
-    aligned_mask = rotate(mask, -angle, reshape=False)
-    return aligned_gs_img, aligned_mask, angle
-
-
-def center_wing(masked_gs_img, mask):
-    """
-    Center the wing in the image.
-    """
-    from skimage.measure import label, regionprops
-
-    mask_centroid = regionprops(label(mask))[0].centroid
-    mask_centroid_int = [int(mask_centroid[0]), int(mask_centroid[1])]
-    shift = (
-        int(masked_gs_img.shape[0] / 2) - mask_centroid_int[0],
-        int(masked_gs_img.shape[1] / 2) - mask_centroid_int[1],
-    )
-    _shifted_image = np.roll(masked_gs_img, shift, axis=(0, 1))
-    _shifted_mask = np.roll(mask, shift, axis=(0, 1))
-    return _shifted_image, _shifted_mask, shift
