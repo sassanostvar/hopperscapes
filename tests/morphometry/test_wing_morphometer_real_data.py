@@ -14,17 +14,23 @@ def test_wing_morphometer_on_real_data():
     import numpy as np
     from skimage.io import imread
 
-    from hopperscapes.morphometry.wing import WingMorphometer, WingMorphometerConfigs
+    from hopperscapes.morphometry.wing import WingMorphometer
+    from hopperscapes.imageproc.masks import pick_largest_region, denoise_mask
 
     wing_mask = imread(WING_MASK_FILEPATH)
 
     wing_area = np.sum(wing_mask)
 
-    configs = WingMorphometerConfigs()
-    configs.max_hole_area = int(wing_area / 100)
-    configs.min_speck_area = int(wing_area / 100)
+    # denoise
+    wing_mask = wing_mask > 0
+    wing_mask = pick_largest_region(wing_mask)
+    wing_mask = denoise_mask(
+        wing_mask,
+        min_speck_area=int(wing_area / 100),
+        max_hole_area=int(wing_area / 100),
+    )
 
-    morphometer = WingMorphometer(configs)
-    table = morphometer.run(wing_mask, return_mask=False)
+    morphometer = WingMorphometer()
+    table = morphometer.run(wing_mask)
 
     assert np.isclose(table["area"], wing_area)

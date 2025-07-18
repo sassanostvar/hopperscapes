@@ -37,7 +37,8 @@ def test_wing_morphometer_on_synthetic_data():
 def test_wing_morphometer_on_noisy_synthetic_data():
     import numpy as np
 
-    from hopperscapes.morphometry.wing import WingMorphometer, WingMorphometerConfigs
+    from hopperscapes.morphometry.wing import WingMorphometer
+    from hopperscapes.imageproc.masks import pick_largest_region, denoise_mask
 
     wing_mask = np.zeros((512, 512), dtype=bool)
 
@@ -49,15 +50,17 @@ def test_wing_morphometer_on_noisy_synthetic_data():
     wing_mask[2:10, 2:10] = True
     wing_mask[210:220, 210:220] = False
 
-    configs = WingMorphometerConfigs()
-    configs.max_hole_area = 101
-    configs.min_speck_area = 101
-    morphometer = WingMorphometer(configs)
+    # denoise
+    wing_mask = pick_largest_region(wing_mask)
+    wing_mask = denoise_mask(
+        wing_mask,
+        min_speck_area=101,
+        max_hole_area=101,
+    )
 
-    assert morphometer.configs.max_hole_area == 101, "Failed to customize configs."
-    assert morphometer.configs.min_speck_area == 101, "Failed to customize configs."
+    morphometer = WingMorphometer()
+    table = morphometer.run(wing_mask)
 
-    table, _final_mask = morphometer.run(wing_mask, return_mask=True)
     assert isinstance(
         table, dict
     ), f"morphometer output should be of type dict; got {type(table)}"

@@ -41,7 +41,8 @@ def test_spots_morphometer_on_synthetic_data():
 def test_spots_morphometer_on_noisy_synthetic_data():
     import numpy as np
 
-    from hopperscapes.morphometry.spots import SpotsMorphometer, SpotsMorphometerConfigs
+    from hopperscapes.morphometry.spots import SpotsMorphometer
+    from hopperscapes.imageproc.masks import denoise_mask
 
     spots_mask = np.zeros((512, 512), dtype=bool)
 
@@ -62,11 +63,17 @@ def test_spots_morphometer_on_noisy_synthetic_data():
     spots_mask[310:315, 310:315] = False
     hole_area = 6 * 6
 
-    configs = SpotsMorphometerConfigs()
-    configs.max_hole_area = hole_area + 1
-    configs.min_speck_area = speck_area + 1
+    max_hole_area = hole_area + 1
+    min_speck_area = speck_area + 1
 
-    morphometer = SpotsMorphometer(configs)
+    # denoise
+    spots_mask = denoise_mask(
+        spots_mask,
+        min_speck_area=min_speck_area,
+        max_hole_area=max_hole_area
+    )
+
+    morphometer = SpotsMorphometer()
     table = morphometer.run(spots_mask)
 
     assert isinstance(table, dict)

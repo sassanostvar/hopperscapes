@@ -13,12 +13,11 @@ SPOTS_MASK_FILEPATH = (
 def test_spots_morphometer_on_spots_segmentations(debug=False):
     from skimage.io import imread
 
-    from hopperscapes.morphometry.spots import SpotsMorphometer, SpotsMorphometerConfigs
+    from hopperscapes.morphometry.spots import SpotsMorphometer
 
     spots_mask = imread(SPOTS_MASK_FILEPATH)
-
-    configs = SpotsMorphometerConfigs()
-    morphometer = SpotsMorphometer(configs)
+    
+    morphometer = SpotsMorphometer()
 
     table = morphometer.run(spots_mask)
 
