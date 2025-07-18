@@ -11,10 +11,6 @@ from torch.utils.data import Dataset
 from hopperscapes import configs
 from hopperscapes.imageproc import preprocess
 
-_GLOBAL_CONFIGS = configs.SegmentationModelConfigs()
-
-SQUARE_IMAGE_DIMS = _GLOBAL_CONFIGS.square_image_size
-
 
 def hopper_collate_fn(batch):
     """
@@ -47,8 +43,8 @@ class ResizeToLongestSide:
     Resize image to given dimensions and pad to make square.
     """
 
-    def __init__(self, target_image_dims: Tuple[int, int] = SQUARE_IMAGE_DIMS):
-        self.img_side_length = target_image_dims
+    def __init__(self, image_side_length: int):
+        self.img_side_length = image_side_length
 
     def __call__(self, input_tensor: torch.Tensor, anti_aliasing=True) -> torch.Tensor:
         # no need to transform images with the right dimensions
@@ -95,29 +91,50 @@ class SharedTransform:
 
 
 class WingPatternDataset(Dataset):
+    """
+    Dataset for wing pattern segmentation.
+
+    Args:
+        image_dir (str): Directory containing the images.
+        masks_dir (str): Directory containing the masks.
+        # metadata_dict (Dict[str, Any]): Metadata dictionary for the dataset.
+        configs ("SegmentationModelConfigs"): Segmentation model configurations, including
+                                                those for the transforms.
+        transform (Optional[Callable[[torch.Tensor], torch.Tensor]]): Transform to apply to images
+            and masks. If None, a default transform is used that resizes images to the specified
+            square image size in the configs.
+    """
+
     def __init__(
         self,
         image_dir: str,
         masks_dir: str,
         # metadata_dict: Dict[str, Any],
-        transform: Optional[
-            Callable[[torch.Tensor], torch.Tensor]
-        ] = ResizeToLongestSide(),
-        config=_GLOBAL_CONFIGS,
+        configs: "SegmentationModelConfigs",
+        transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
     ):
         super().__init__()
 
         self.image_dir = image_dir
         self.masks_dir = masks_dir
         # self.metadata = metadata_dict
-        self.transform = SharedTransform(transform) if transform else None
-        self.config = config
+        self.configs = configs
+
+        # init the transforms
+        if transform is None:
+            default_transform = ResizeToLongestSide(
+                image_side_length=self.configs.square_image_size
+            )
+            self.transform = SharedTransform(default_transform)
+        else:
+            self.transform = SharedTransform(transform)
+
         self.valid = []
         self.image_ids = [
             f for f in os.listdir(image_dir) if f.endswith((".jpg", ".png"))
         ]
 
-        self.expected_heads = set(self.config.out_channels.keys())
+        self.expected_heads = set(self.configs.out_channels.keys())
         self.mask_ids = []
         for img_id in self.image_ids:
             # FIXME: re-running glob for each image seems inefficient; we could
@@ -189,7 +206,7 @@ class WingPatternDataset(Dataset):
         image = image.astype(float) / 255.0
 
         # convert to HSV
-        if self.config.convert_to_hsv:
+        if self.configs.convert_to_hsv:
             image = preprocess.convert_to_hsv(image)
 
         image_tensor = torch.from_numpy(image).permute(2, 0, 1).float()
@@ -198,7 +215,7 @@ class WingPatternDataset(Dataset):
         for mask_id, mask_path in masks_paths.items():
             mask = imread(mask_path)
             # ----- guard against (0, 255) -----
-            if self.config.out_channels[mask_id] > 1:
+            if self.configs.out_channels[mask_id] > 1:
                 mask_tensor = torch.from_numpy(mask).unsqueeze(0).long()  # multi-class
             else:
                 mask_tensor = (
@@ -219,7 +236,7 @@ class WingPatternDataset(Dataset):
 
         final_masks = {}
         for mask_id, mask_tensor in sample["masks"].items():
-            if self.config.out_channels[mask_id] > 1:
+            if self.configs.out_channels[mask_id] > 1:
                 final_masks[mask_id] = mask_tensor.squeeze(
                     0
                 ).long()  # TODO: is this correct?
@@ -239,29 +256,36 @@ class HopperZarrDataset(Dataset):
 
     Args:
         zarr_path (str): Path to zarr store.
+        configs ("SegmentationModelConfigs"): Segmentation model configurations, including
+                                                those for the transforms.
         pyramid_level (int): ome-zarr pyramid level to access.
         include_metadata (bool): Whether to retrieve and include the image metadata
                                 from the Zarr store (default is True).
         transform (callable): Transform to apply to images.
-        configs ("SegmentationModelConfigs"): Segmentation data prep configs.
+
     """
 
     def __init__(
         self,
         zarr_path: str,
+        configs: "SegmentationModelConfigs",
         pyramid_level: int = 0,
         include_metadata: bool = True,
-        transform: Optional[
-            Callable[[torch.Tensor], torch.Tensor]
-        ] = ResizeToLongestSide(),
-        configs=_GLOBAL_CONFIGS,
+        transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
     ):
         super().__init__()
 
         self.zarr_root = zarr.open(zarr_path, mode="r")
-        self.transform = transform
         self.configs = configs
         self.include_metadata = include_metadata
+
+        if transform is None:
+            default_transform = ResizeToLongestSide(
+                image_side_length=self.configs.square_image_size
+            )
+            self.transform = SharedTransform(default_transform)
+        else:
+            self.transform = SharedTransform(transform)
 
         self.image_paths = []
 
@@ -275,8 +299,8 @@ class HopperZarrDataset(Dataset):
 
         self.zarr_root.visititems(find_rgb_images)
 
-        # debugging
-        # print(f"found {len(self.image_paths)} images in {zarr_path}")
+        # Query to find masks if they exist:
+        # ...
 
     def __len__(self):
         return len(self.image_paths)
@@ -290,8 +314,8 @@ class HopperZarrDataset(Dataset):
         image_arr = self.zarr_root[image_path][:]
         image_tensor = torch.from_numpy(image_arr).float() / 255.0
 
-        if self.transform:
-            image_tensor = self.transform(image_tensor)
+        # load masks from zarr store if they exist
+        # ...
 
         # metadata
         if self.include_metadata:
@@ -306,6 +330,9 @@ class HopperZarrDataset(Dataset):
         else:
             metadata = {}
 
-        output = {"image": image_tensor, "masks": {}, "id": idx, "meta": metadata}
+        sample = {"image": image_tensor, "masks": {}, "id": idx, "meta": metadata}
 
-        return output
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample

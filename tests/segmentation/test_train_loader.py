@@ -17,11 +17,13 @@ def test_train_loader(debug=False):
     Test the train loader.
     """
     from hopperscapes.segmentation.dataset import WingPatternDataset, hopper_collate_fn
+    from hopperscapes.configs import SegmentationModelConfigs
 
     # Create a dataset instance
     dataset = WingPatternDataset(
         image_dir=IMAGES_DIR,
         masks_dir=MASKS_DIR,
+        configs=SegmentationModelConfigs(),
     )
 
     # Check the length of the dataset

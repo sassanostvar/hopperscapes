@@ -10,8 +10,9 @@ def test_hopper_zarr_dataset_init():
     from torch.utils.data import Dataset
 
     from hopperscapes.segmentation.dataset import HopperZarrDataset
+    from hopperscapes.configs import SegmentationModelConfigs
 
-    ZarrDataset = HopperZarrDataset(ZARR_PATH)
+    ZarrDataset = HopperZarrDataset(ZARR_PATH, configs=SegmentationModelConfigs())
     assert isinstance(ZarrDataset, Dataset)
 
 
@@ -21,8 +22,9 @@ def test_hopper_zarr_dataset_fetch_image():
     from torch.utils.data import Dataset
 
     from hopperscapes.segmentation.dataset import HopperZarrDataset
+    from hopperscapes.configs import SegmentationModelConfigs
 
-    ZarrDataset = HopperZarrDataset(ZARR_PATH)
+    ZarrDataset = HopperZarrDataset(ZARR_PATH, configs=SegmentationModelConfigs())
     assert isinstance(ZarrDataset, Dataset)
 
     idx = 0
@@ -40,9 +42,10 @@ def test_hopper_zarr_dataset_fetch_image_test_transform(debug=False):
     from torch.utils.data import Dataset
 
     from hopperscapes.segmentation.dataset import HopperZarrDataset
+    from hopperscapes.configs import SegmentationModelConfigs
 
     # with transform
-    ZarrDataset = HopperZarrDataset(ZARR_PATH)
+    ZarrDataset = HopperZarrDataset(ZARR_PATH, configs=SegmentationModelConfigs())
     assert isinstance(ZarrDataset, Dataset)
 
     idx = 0
@@ -54,7 +57,7 @@ def test_hopper_zarr_dataset_fetch_image_test_transform(debug=False):
     assert isinstance(transformed_sample["meta"], dict)
 
     # without transform
-    ZarrDataset = HopperZarrDataset(ZARR_PATH, transform=None)
+    ZarrDataset = HopperZarrDataset(ZARR_PATH, configs=SegmentationModelConfigs(), transform=None)
     assert isinstance(ZarrDataset, Dataset)
 
     idx = 0

@@ -1,9 +1,10 @@
+# TODO: move this to tests/segmentation
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pytest
 
-from hopperscapes.segmentation.dataset import WingPatternDataset
 
 DATA_DIR = Path(__file__).parent.parent / "test_data" / "dataset" / "raw" / "train"
 IMAGES_DIR = DATA_DIR / "images"
@@ -14,9 +15,13 @@ SAVEDIR = Path(__file__).parent.parent.parent / "outputs" / "test_outputs"
 
 @pytest.mark.unit
 def test_custom_dataset_class(debug=False):
+    from hopperscapes.segmentation.dataset import WingPatternDataset
+    from hopperscapes.configs import SegmentationModelConfigs
+    
     loader = WingPatternDataset(
         image_dir=IMAGES_DIR,
         masks_dir=MASKS_DIR,
+        configs=SegmentationModelConfigs(),
     )
     print(f"Number of images: {len(loader)}")
     print(f"Number of masks: {len(loader.mask_ids)}")
