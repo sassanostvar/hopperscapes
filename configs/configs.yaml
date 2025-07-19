@@ -8,7 +8,7 @@ image_transforms:
   ResizeToLongestSide:
     image_side_length: 512
   ConvertToHSV: {}
-  PrepareTensor: {}
+  PrepareImageTensor: {}
 
 mask_transforms:
   ResizeToLongestSide:

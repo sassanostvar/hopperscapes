@@ -3,7 +3,7 @@ Configurations for segmentation model architecture, inputs, loss functions, and 
 """
 
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Dict, Tuple
 
 
 @dataclass
@@ -17,11 +17,15 @@ class SegmentationModelConfigs:
 
     in_channels: int = 3  # RGB, HSV, ...
 
+    image_file_exts: Tuple[str] = field(
+        default_factory=lambda: (".png", ".jpg")
+    )
+
     image_transforms: Dict = field(
         default_factory=lambda: {
             "ResizeToLongestSide": {"image_side_length": 512},
             # "ConvertToHSV": {},
-            "PrepareTensor": {},
+            "PrepareImageTensor": {},
         }
     )
 

@@ -4,12 +4,11 @@ Use a pre-trained model in inference on a given image.
 
 import argparse
 from pathlib import Path
-from typing import Callable, Dict, Union, Optional
+from typing import Dict, Union, Optional
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torchvision.transforms as T
 
 from hopperscapes.segmentation import models
 from hopperscapes.configs import SegmentationModelConfigs
@@ -17,13 +16,14 @@ from hopperscapes.segmentation.dataset import SampleTransformer
 
 
 def load_model(
-        checkpoint_path: str, 
-        configs: SegmentationModelConfigs,
-        device: str = "cpu") -> nn.Module:
+    checkpoint_path: str, configs: SegmentationModelConfigs, device: str = "cpu"
+) -> nn.Module:
     """
     Load model from checkpoint.
     Args:
         checkpoint_path (str): Path to the model checkpoint.
+        configs (SegmentationModelConfigs): Model configurations.
+        If not provided, defaults to SegmentationModelConfigs.
         device (str): Device to load the model on (default is "cpu").
     Returns:
         nn.Module: Loaded model.
@@ -44,18 +44,6 @@ def load_model(
         raise ValueError(
             f"Failed to load model at {checkpoint_path} to {device}"
         ) from e
-
-    try:
-        model_configs = checkpoint["model_configs"]
-    except Exception as e:
-        raise ValueError(
-            f"Could not recover `model_configs' from checkpoint {checkpoint_path}."
-        )
-
-    if not isinstance(model_configs, dict):
-        raise TypeError(
-            f"model_configs should be a dictionary, got {type(model_configs)}"
-        )
 
     model_configs = {
         "num_groups": configs.num_groups,
@@ -137,12 +125,12 @@ def preprocess_image(
         raise ValueError(
             f"Image at {image.shape} must have {_in_channels} channels, got {image.shape[2]}."
         )
-    
+
     sample_transformer = SampleTransformer(configs)
     sample = {
         "image": image,
         "masks": {},  # No mask for inference
-        'id': 0  # Dummy ID for inference
+        "id": 0,  # Dummy ID for inference
     }
 
     return sample_transformer(sample)["image"].unsqueeze(0).to(device)
@@ -197,13 +185,22 @@ def post_process_predictions(
 
 def infer(
     image_arr: np.ndarray,
-    configs: Optional["SegmentationModelConfigs"] = None,
-    model: nn.Module = None,
+    configs: Optional["SegmentationModelConfigs"],
+    model: nn.Module,
     device: str = "cpu",
     binary_threshold: float = 0.5,
 ) -> Dict[str, np.ndarray]:
     """
     Inference pipeline.
+
+    Args:
+        image_arr (np.ndarray): Input image array.
+        configs (Optional[SegmentationModelConfigs]): Model configurations for preprocessing.
+        model (nn.Module): Pre-trained model for inference. If not provided, it will be loaded from the checkpoint.
+        device (str): Device to use for inference (default is "cpu").
+        binary_threshold (float): Threshold value to use to binarize probabilities (default is 0.5).
+    Returns:
+        Dict[str, np.ndarray]: Dictionary mapping head_name to numpy array of head mask(s).
     """
 
     image_tensor = preprocess_image(image_arr, device, configs)
@@ -290,4 +287,5 @@ if __name__ == "__main__":
     )
 
     args = arg_parser.parse_args()
+
     main(args)

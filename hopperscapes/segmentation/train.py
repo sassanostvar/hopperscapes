@@ -23,20 +23,6 @@ from hopperscapes.segmentation import loss
 from hopperscapes.segmentation.dataset import WingPatternDataset, hopper_collate_fn
 from hopperscapes.segmentation.models import HopperNetLite
 
-"""
-Checklist: 
-- [x] add validation
-- [x] add CLI
-- [x] set up configs yaml
-- [x] test on GPUs
-- [x] add logging
-- [ ] log preprocessing
-- [ ] checkpoint logs
-- [ ] dynamic loss weight adjustments
-- [ ] add support for distributed training
-- [ ] add wandb integration
-"""
-
 logger = logging.getLogger("HopperNetTrainingLog")
 
 
@@ -192,7 +178,7 @@ class HopperNetTrainer:
             self.model.train()
 
             # dynamically freeze and unfreeze
-            # model heads based on dice scores
+            # model heads based on Dice score thresholds
             if self.num_epochs > 1:
                 for head_name, threshold in self.threshold_dice_scores.items():
                     if head_name not in self.dice_scores:
@@ -269,9 +255,6 @@ class HopperNetTrainer:
             # update dice scores
             self.update_dice_scores(logits=logits, targets=masks, clipping_masks=None)
 
-            # log training performance
-            self.log_training_performance()
-
             # incremet
             self.num_iters += 1
             n_batches += 1
@@ -317,6 +300,11 @@ class HopperNetTrainer:
     ) -> None:
         """
         Compute the Dice scores for each head.
+
+        Args:
+            logits (torch.Tensor): Model outputs.
+            targets (torch.Tensor): Ground truth masks.
+            clipping_masks (torch.Tensor, optional): Masks to clip the Dice scores.
         """
         with torch.no_grad():
             for head_name, head_logits in logits.items():
@@ -345,10 +333,9 @@ class HopperNetTrainer:
 
     def save_checkpoint(self) -> None:
         """
-        **NOTE**: the inference script is going to require 'model_configs' to instantiate
-        the model for inference.
+        Save the model checkpoint.
         """
-        checkoint = {
+        checkpoint = {
             "epoch": self.epoch,
             "model_configs": self.model.configs,
             "model_state_dict": self.model.state_dict(),
@@ -369,7 +356,7 @@ class HopperNetTrainer:
             },
         }
         torch.save(
-            checkoint,
+            checkpoint,
             os.path.join(self.checkpoints_dir, f"checkpoint_epoch_{self.epoch}.pth"),
         )
         logger.info(
@@ -402,24 +389,10 @@ class HopperNetTrainer:
                 )
 
 
-def main():
+def main(args):
     """
     Run model training
     """
-
-    args_parser = argparse.ArgumentParser(
-        description="Train semantic segmentation model."
-    )
-    args_parser.add_argument(
-        "--configs_path", default=None, help="Path to config YAML."
-    )
-    args_parser.add_argument("--images_dir", default=None, help="Path to images")
-    args_parser.add_argument("--masks_dir", default=None, help="Path to masks")
-    args_parser.add_argument(
-        "--checkpoint_path", default=None, help="Path to checkpoint to resume."
-    )
-
-    args = args_parser.parse_args()
 
     configs_path = args.configs_path
     images_dir = args.images_dir
@@ -430,7 +403,7 @@ def main():
     # ----- Load configs --------
     # ---------------------------
     if configs_path is None:
-        c = SegmentationModelConfigs() # load the default if no configs is provided
+        c = SegmentationModelConfigs()  # load the default if no configs is provided
     else:
         c = SegmentationModelConfigs.from_yaml(configs_path)
 
@@ -499,4 +472,18 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args_parser = argparse.ArgumentParser(
+        description="Train semantic segmentation model."
+    )
+    args_parser.add_argument(
+        "--configs_path", default=None, help="Path to config YAML."
+    )
+    args_parser.add_argument("--images_dir", default=None, help="Path to images")
+    args_parser.add_argument("--masks_dir", default=None, help="Path to masks")
+    args_parser.add_argument(
+        "--checkpoint_path", default=None, help="Path to checkpoint to resume."
+    )
+
+    args = args_parser.parse_args()
+
+    main(args)
