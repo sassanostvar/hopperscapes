@@ -4,20 +4,18 @@
 ![Python](https://img.shields.io/badge/python-3.9+-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-pytest-green)
-![Coverage](https://img.shields.io/badge/coverage-74%25-yellowgreen)
+![Coverage](https://img.shields.io/badge/coverage-73%25-yellowgreen)
 ![Status](https://img.shields.io/badge/status-alpha-orange)
 ![CI](https://github.com/sassanostvar/hopperscapes/actions/workflows/tests.yml/badge.svg)
 
-> ** Demo Alpha - July 2025 **
-## Overview
-
 <p align='center'>Mapping and representation learning of forewing morphology and patterning in planthoppers</p>
 
-![Demo](assets/wings.gif)
+> ** demo alpha - july 2025 **
+## Overview
 
-Planthoppers have evolved intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) is an effort toward representation learning of the underlying _morpho-chromospace_, linking the evolving tegminal material ecology to shared developmental roots and simple biophysical principles.
+Planthoppers have evolved intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) applies representation learning to the underlying _morpho-chromospace_, seeking to link the evolving tegminal material ecology to shared developmental roots and fundamental biophysical principles.
 
-This repository is a toolset for quantitative analysis of light microscopy and photographic images of tegmina, including utilities for dataset management, image processing, semantic segmentation, morphometry, and reconstruction.
+This repository compiles a toolset for quantitative analysis of light microscopy and photographic images of tegmina, including utilities for dataset management, image processing, semantic segmentation, morphometry, and reconstruction.
 
 ## Repository Structure
 This repository is organized as follows:
@@ -41,6 +39,17 @@ Each module's components, functions, and implementation choices are outlined in 
 - hopperscapes.imageproc
 - [hopperscapes.segmentation](./hopperscapes/segmentation/README.md)
 - hopperscapes.morphometry
+
+## Installation
+To install the package, create a new Python environment and clone the repository.
+
+```bash
+% cd $HOPPERSCAPES_ROOT
+% python -m pip install -r requirements.txt
+% python -m pip install -e .
+```
+
+Note: The project is currently under active development, and the API may change.
 
 ## Data
 Data curation for the project is ongoing. Part of the effort is focused on sampling established Northeast populations of _L. delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are recorded and organized as specified in [hopperscapes.data.record.py](./hopperscapes/data/record.py).
@@ -71,18 +80,18 @@ Local sources of _L. delicatula_ specimens include Morningside Heights, New York
 
 ## Workflows
 
-We use automated segmentation workflows, described in [hopperscapes.segmentation](./hopperscapes/segmentation/README.md), to preprocess, register, and standardize the light microscopy dataset as demonstrated below.
+### Preprocessing & Standardization
 
 <p align="center"><img src="assets/wing_alignment.gif" alt="normalization" style="width: 100%; max-width: 500px; border-radius: 0px;"></p>
 
 ## Status & Roadmap
 
-We are developing the project in public. In 2024, we reached the 1500 specimen mark, with 200 specimens (400 samples) already imaged and preprocessed by Q1 2025. A priority for Q3 2025 is to release the first _L. delicatula_ light microscopy dataset, along with proof-read segmentations and model checkpoints.
+We are developing the project in public. We reached the 1500 specimen mark in 2024, and 200 specimens (400 samples) have been imaged as of Q1 2025. Release of the first _L. delicatula_ light microscopy dataset, along with proof-read segmentations and model checkpoints, is expected in Q3 2025.
 
 For more details on the project roadmap, please visit [STATUS.md](STATUS.md).
 
-## Credits
-[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) was conceived, designed, planned, and executed by [Sassan Ostvar](https://sassanostvar.github.io). We are grateful to Columbia University Public Safety and members of the Mechanical Engineering Graduate Association (MEGA) for assistance during sample collection.
+## Acknowledgements
+[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) was designed and executed by [Sassan Ostvar](https://sassanostvar.github.io). We are grateful to Columbia University Public Safety and members of the Mechanical Engineering Graduate Association (MEGA) for assistance during sample collection.
 
 ## Citation
 _forthcoming_
