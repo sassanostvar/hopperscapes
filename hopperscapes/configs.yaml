@@ -1,10 +1,19 @@
 model_name: "hopperscapes_demo"
-savedir: "./outputs/demo/models"
+savedir: "./outputs/demo/models/"
 device: "cpu"
-square_image_size: 512
-convert_to_hsv: false
 
 in_channels: 3
+
+image_transforms:
+  ResizeToLongestSide:
+    image_side_length: 512
+  ConvertToHSV: {}
+  PrepareTensor: {}
+
+mask_transforms:
+  ResizeToLongestSide:
+    image_side_length: 512
+
 out_channels:
   wing: 1
   veins: 1
@@ -52,9 +61,9 @@ loss_function_configs:
       params: {}
   veins:
     bce:
-      weight: 0.3
+      weight: 0.5
       params:
-        pos_weight: 50.0
+        pos_weight: 100.0
     soft_dice:
       weight: 2.0
       params: {}

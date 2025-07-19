@@ -3,13 +3,17 @@ import os
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Callable
 
+import numpy as np
+
 import torch
 import zarr
 from skimage.io import imread
 from torch.utils.data import Dataset
+import torchvision.transforms as T
 
-from hopperscapes import configs
+from hopperscapes.configs import SegmentationModelConfigs
 from hopperscapes.imageproc import preprocess
+from hopperscapes.imageproc.color import convert_to_hsv
 
 
 def hopper_collate_fn(batch):
@@ -38,6 +42,15 @@ def hopper_collate_fn(batch):
     return {"image": images, "masks": collated_masks, "ids": ids}
 
 
+class ConvertToHSV:
+    """
+    Convert RGB image to HSV.
+    """
+
+    def __call__(self, image: np.ndarray) -> np.ndarray:
+        return convert_to_hsv(image)
+
+
 class ResizeToLongestSide:
     """
     Resize image to given dimensions and pad to make square.
@@ -46,47 +59,82 @@ class ResizeToLongestSide:
     def __init__(self, image_side_length: int):
         self.img_side_length = image_side_length
 
-    def __call__(self, input_tensor: torch.Tensor, anti_aliasing=True) -> torch.Tensor:
-        # no need to transform images with the right dimensions
-        if input_tensor.shape[-2:] == (self.img_side_length, self.img_side_length):
-            return input_tensor
-
-        # reorder the channels from (C, H, W) to (H, W, C)
-        input_arr = input_tensor.permute(1, 2, 0).cpu().numpy()
+    def __call__(self, image: np.ndarray, anti_aliasing=True) -> np.ndarray:
+        # # no need to reshape images with the right dimensions
+        if image.shape[:2] == (self.img_side_length, self.img_side_length):
+            return image
 
         # use interpolation order 0 for masks and 1 for images
-        is_mask = input_tensor.dim() == 3 and input_tensor.shape[0] == 1
+        is_mask = image.ndim == 2 or (image.ndim == 3 and image.shape[2] == 1)
         interpolation_order = 0 if is_mask else 1
 
         input_arr = preprocess.resize_image(
-            input_arr,
+            image,
             target_side_length=self.img_side_length,
             order=interpolation_order,
             preserve_range=True,
             anti_aliasing=anti_aliasing,
         )
-        input_arr = preprocess.make_square(input_arr)
-
-        # reorder the channels from (H, W, C) to (C, H, W)
-        output_tensor = torch.from_numpy(input_arr).permute(2, 0, 1).float()
-        return output_tensor
+        return preprocess.make_square(input_arr)
 
 
-class SharedTransform:
-    def __init__(self, base_transform: Callable[[torch.Tensor], torch.Tensor]):
-        self.base_transform = base_transform
+class PrepareTensor:
+    """
+    Convert numpy array to scaled tensor with permuted channels.
+    """
+
+    def __call__(self, image: np.ndarray) -> torch.Tensor:
+        image = image.astype(np.float32) / 255.0
+        image_tensor = torch.from_numpy(image).permute(2, 0, 1).float()
+        return image_tensor
+
+
+class SampleTransformer:
+    def __init__(self, configs: SegmentationModelConfigs):
+        self.configs = configs
+
+        self.image_transforms = self._build_pipeline(configs.image_transforms)
+        self.mask_transforms = self._build_pipeline(configs.mask_transforms)
+
+    def _build_pipeline(self, transform_configs: Dict):
+        transform_list = []
+        for transform_name, params in transform_configs.items():
+            if transform_name == "ResizeToLongestSide":
+                transform_list.append(ResizeToLongestSide(**params))
+            elif transform_name == "ConvertToHSV":
+                transform_list.append(ConvertToHSV())
+            elif transform_name == "PrepareTensor":
+                transform_list.append(PrepareTensor())
+            else:
+                raise ValueError(f"Unknown transform: {transform_name}")
+
+        return T.Compose(transform_list) if transform_list else None
 
     def __call__(self, sample: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        img = sample["image"]
-        masks = {k: v for k, v in sample["masks"].items()}
+        """
+        Apply the transformations to the sample.
+        """
+        if self.image_transforms:
+            sample["image"] = self.image_transforms(sample["image"])
 
-        if self.base_transform:
-            img = self.base_transform(img)
-            for mask_id in masks.keys():
-                masks[mask_id] = self.base_transform(masks[mask_id])
+        processed_masks = {}
+        for mask_id, mask_data in sample["masks"].items():
+            if self.mask_transforms:
+                mask_data = self.mask_transforms(mask_data)
 
-        sample["image"] = img
-        sample["masks"] = masks
+            num_classes = self.configs.out_channels[mask_id]
+
+            if num_classes > 1:
+                processed_masks[mask_id] = torch.from_numpy(
+                    mask_data
+                ).long()  # multi-class
+            else:
+                mask_tensor = torch.from_numpy(mask_data)
+                processed_masks[mask_id] = (
+                    (mask_tensor > 0).unsqueeze(0).float()
+                )  # binary mask
+
+        sample["masks"] = processed_masks
         return sample
 
 
@@ -100,9 +148,6 @@ class WingPatternDataset(Dataset):
         # metadata_dict (Dict[str, Any]): Metadata dictionary for the dataset.
         configs ("SegmentationModelConfigs"): Segmentation model configurations, including
                                                 those for the transforms.
-        transform (Optional[Callable[[torch.Tensor], torch.Tensor]]): Transform to apply to images
-            and masks. If None, a default transform is used that resizes images to the specified
-            square image size in the configs.
     """
 
     def __init__(
@@ -111,23 +156,21 @@ class WingPatternDataset(Dataset):
         masks_dir: str,
         # metadata_dict: Dict[str, Any],
         configs: "SegmentationModelConfigs",
-        transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
     ):
         super().__init__()
 
         self.image_dir = image_dir
         self.masks_dir = masks_dir
         # self.metadata = metadata_dict
-        self.configs = configs
 
-        # init the transforms
-        if transform is None:
-            default_transform = ResizeToLongestSide(
-                image_side_length=self.configs.square_image_size
-            )
-            self.transform = SharedTransform(default_transform)
+        if configs is None:
+            self.configs = SegmentationModelConfigs()
+        elif isinstance(configs, SegmentationModelConfigs):
+            self.configs = configs
         else:
-            self.transform = SharedTransform(transform)
+            raise ValueError("configs must be an instance of SegmentationModelConfigs.")
+
+        self.transform = SampleTransformer(configs=self.configs)
 
         self.valid = []
         self.image_ids = [
@@ -189,61 +232,20 @@ class WingPatternDataset(Dataset):
     def __len__(self):
         return len(self.image_ids)
 
-    def __getitem__(self, idx):
-        """
-        TODO: consider moving some of these outside to reduce overhead on __getitem__
-        """
-        img_id = self.image_ids[idx]
-        image_path = os.path.join(self.image_dir, img_id)
-
-        mask_ids_dict = self.mask_ids[idx]
-        masks_paths = {
-            mask_id: os.path.join(self.masks_dir, mask_path)
-            for mask_id, mask_path in mask_ids_dict.items()
-        }
-
-        image = imread(image_path)
-        image = image.astype(float) / 255.0
-
-        # convert to HSV
-        if self.configs.convert_to_hsv:
-            image = preprocess.convert_to_hsv(image)
-
-        image_tensor = torch.from_numpy(image).permute(2, 0, 1).float()
-
-        masks = {}
-        for mask_id, mask_path in masks_paths.items():
-            mask = imread(mask_path)
-            # ----- guard against (0, 255) -----
-            if self.configs.out_channels[mask_id] > 1:
-                mask_tensor = torch.from_numpy(mask).unsqueeze(0).long()  # multi-class
-            else:
-                mask_tensor = (
-                    (torch.from_numpy(mask) > 0).unsqueeze(0).float()
-                )  # binary
-            # ----------------------------------
-            masks[mask_id] = mask_tensor
+    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
+        image_path = os.path.join(self.image_dir, self.image_ids[idx])
 
         sample = {
-            "image": image_tensor,
-            "masks": masks,
-            # "meta": meta,
-            "id": img_id,
+            "image": imread(image_path),
+            "masks": {
+                mask_id: imread(os.path.join(self.masks_dir, mask_path))
+                for mask_id, mask_path in self.mask_ids[idx].items()
+            },
+            "id": self.image_ids[idx],
         }
 
         if self.transform:
             sample = self.transform(sample)
-
-        final_masks = {}
-        for mask_id, mask_tensor in sample["masks"].items():
-            if self.configs.out_channels[mask_id] > 1:
-                final_masks[mask_id] = mask_tensor.squeeze(
-                    0
-                ).long()  # TODO: is this correct?
-            else:
-                final_masks[mask_id] = mask_tensor
-
-        sample["masks"] = final_masks
 
         return sample
 
@@ -261,8 +263,6 @@ class HopperZarrDataset(Dataset):
         pyramid_level (int): ome-zarr pyramid level to access.
         include_metadata (bool): Whether to retrieve and include the image metadata
                                 from the Zarr store (default is True).
-        transform (callable): Transform to apply to images.
-
     """
 
     def __init__(
@@ -271,7 +271,6 @@ class HopperZarrDataset(Dataset):
         configs: "SegmentationModelConfigs",
         pyramid_level: int = 0,
         include_metadata: bool = True,
-        transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
     ):
         super().__init__()
 
@@ -279,13 +278,7 @@ class HopperZarrDataset(Dataset):
         self.configs = configs
         self.include_metadata = include_metadata
 
-        if transform is None:
-            default_transform = ResizeToLongestSide(
-                image_side_length=self.configs.square_image_size
-            )
-            self.transform = SharedTransform(default_transform)
-        else:
-            self.transform = SharedTransform(transform)
+        self.transform = SampleTransformer(configs=self.configs)
 
         self.image_paths = []
 
@@ -312,7 +305,10 @@ class HopperZarrDataset(Dataset):
 
         image_path = self.image_paths[idx]
         image_arr = self.zarr_root[image_path][:]
-        image_tensor = torch.from_numpy(image_arr).float() / 255.0
+
+        # ensure the axes order is correct
+        if image_arr.ndim == 3 and image_arr.shape[0] in [1, 3, 4]: # channel axis is first
+            image_arr = np.transpose(image_arr, (1, 2, 0))  # convert to HWC
 
         # load masks from zarr store if they exist
         # ...
@@ -330,7 +326,7 @@ class HopperZarrDataset(Dataset):
         else:
             metadata = {}
 
-        sample = {"image": image_tensor, "masks": {}, "id": idx, "meta": metadata}
+        sample = {"image": image_arr, "masks": {}, "id": idx, "meta": metadata}
 
         if self.transform:
             sample = self.transform(sample)

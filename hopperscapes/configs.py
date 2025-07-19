@@ -9,15 +9,27 @@ from typing import Dict
 @dataclass
 class SegmentationModelConfigs:
     """
-    Configuration for model training
+    Configuration for data prep and model training
     """
 
     model_name: str = "hopperscapes_demo"
     savedir: str = "./outputs/demo/models"
-    square_image_size: int = 512  # -> (512x512) inputs
-    convert_to_hsv: bool = False
 
     in_channels: int = 3  # RGB, HSV, ...
+
+    image_transforms: Dict = field(
+        default_factory=lambda: {
+            "ResizeToLongestSide": {"image_side_length": 512},
+            # "ConvertToHSV": {},
+            "PrepareTensor": {},
+        }
+    )
+
+    mask_transforms: Dict = field(
+        default_factory=lambda: {
+            "ResizeToLongestSide": {"image_side_length": 512},
+        }
+    )
 
     # model heads and channel counts
     out_channels: Dict[str, int] = field(
@@ -29,6 +41,7 @@ class SegmentationModelConfigs:
         }
     )
     num_groups: int = 1  # for GroupNorm
+    upsample_mode: str = "bilinear"  # or "nearest"
 
     # training configs
     device: str = "cpu"

@@ -3,19 +3,23 @@ Use a pre-trained model in inference on a given image.
 """
 
 import argparse
-from typing import Dict, Callable, Union
+from pathlib import Path
+from typing import Callable, Dict, Union, Optional
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
 
-from pathlib import Path
-
 from hopperscapes.segmentation import models
+from hopperscapes.configs import SegmentationModelConfigs
+from hopperscapes.segmentation.dataset import SampleTransformer
 
 
-def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:
+def load_model(
+        checkpoint_path: str, 
+        configs: SegmentationModelConfigs,
+        device: str = "cpu") -> nn.Module:
     """
     Load model from checkpoint.
     Args:
@@ -28,6 +32,12 @@ def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:
         raise TypeError(
             f"checkpoint_path should be a string or Path, got {type(checkpoint_path)}"
         )
+
+    if not isinstance(configs, SegmentationModelConfigs):
+        raise TypeError(
+            f"configs should be an instance of SegmentationModelConfigs, got {type(configs)}"
+        )
+
     try:
         checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
     except Exception as e:
@@ -47,22 +57,12 @@ def load_model(checkpoint_path: str, device: str = "cpu") -> nn.Module:
             f"model_configs should be a dictionary, got {type(model_configs)}"
         )
 
-    if "num_groups" not in model_configs:
-        raise ValueError(
-            f"model_configs should contain `num_groups' key, got {model_configs.keys()}"
-        )
-    if "in_channels" not in model_configs:
-        raise ValueError(
-            f"model_configs should contain `in_channels' key, got {model_configs.keys()}"
-        )
-    if "out_channels" not in model_configs:
-        raise ValueError(
-            f"model_configs should contain `out_channels' key, got {model_configs.keys()}"
-        )
-    if "upsample_mode" not in model_configs:
-        raise ValueError(
-            f"model_configs should contain `upsample_mode' key, got {model_configs.keys()}"
-        )
+    model_configs = {
+        "num_groups": configs.num_groups,
+        "in_channels": configs.in_channels,
+        "out_channels": configs.out_channels,
+        "upsample_mode": configs.upsample_mode,
+    }
 
     model = models.HopperNetLite(**model_configs)
 
@@ -103,7 +103,7 @@ def load_image(image_path: Union[str, Path]) -> np.ndarray:
 def preprocess_image(
     image: np.ndarray,
     device: str = "cpu",
-    transform: Callable[[torch.Tensor], torch.Tensor] = T.ToTensor(),
+    configs: Optional[SegmentationModelConfigs] = None,
 ) -> torch.Tensor:
     """
     Prepare image for inference.
@@ -112,13 +112,40 @@ def preprocess_image(
     Args:
         image (np.ndarray): Input image.
         device (str): Device to use for inference (default is "cpu").
-        transform (Callable): Transforms to apply to the image (default is ToTensor).
+        configs (Optional[SegmentationModelConfigs]): Model configurations for preprocessing.
     Returns:
         torch.Tensor: Preprocessed image tensor ready for inference.
     """
 
-    image_tensor = transform(image).unsqueeze(0).to(device)
-    return image_tensor
+    if configs is None:
+        configs = SegmentationModelConfigs()
+    elif isinstance(configs, SegmentationModelConfigs):
+        pass
+    else:
+        raise ValueError("configs should be an instance of SegmentationModelConfigs.")
+
+    # verify channels
+
+    _in_channels = configs.in_channels
+
+    if _in_channels > 1 and len(image.shape) == 2:
+        raise ValueError(
+            f"Image at {image.shape} must be 3D (grayscale or RGB) for {_in_channels} channels."
+        )
+
+    if _in_channels > 1 and (image.shape[2] != _in_channels):
+        raise ValueError(
+            f"Image at {image.shape} must have {_in_channels} channels, got {image.shape[2]}."
+        )
+    
+    sample_transformer = SampleTransformer(configs)
+    sample = {
+        "image": image,
+        "masks": {},  # No mask for inference
+        'id': 0  # Dummy ID for inference
+    }
+
+    return sample_transformer(sample)["image"].unsqueeze(0).to(device)
 
 
 def run_inference(
@@ -156,15 +183,8 @@ def post_process_predictions(
     for head_name, logits in outputs.items():
         # multi-class output
         if logits.shape[1] > 1:
-            probs = torch.softmax(logits, dim=1)
-            H, W = probs.shape[2], probs.shape[3]
-            labels_mask = np.zeros((H, W), dtype=np.int64)
-            for class_id in range(probs.shape[1]):
-                class_binary_mask = (
-                    probs[0, class_id, :, :].detach().cpu().numpy() > binary_threshold
-                )
-                labels_mask[class_binary_mask] = class_id
-            processed_outputs[head_name] = labels_mask
+            labels_mask = torch.argmax(logits, dim=1)
+            processed_outputs[head_name] = labels_mask.squeeze(0).detach().cpu().numpy()
 
         # single-class output
         elif logits.shape[1] == 1:
@@ -176,44 +196,62 @@ def post_process_predictions(
 
 
 def infer(
-    image_path: str, checkpoint_path: str, device: str = "cpu"
+    image_arr: np.ndarray,
+    configs: Optional["SegmentationModelConfigs"] = None,
+    model: nn.Module = None,
+    device: str = "cpu",
+    binary_threshold: float = 0.5,
 ) -> Dict[str, np.ndarray]:
     """
     Inference pipeline.
     """
 
-    model = load_model(checkpoint_path, device)
-
-    image_arr = load_image(image_path)
-
-    image_tensor = preprocess_image(image_arr, device)
+    image_tensor = preprocess_image(image_arr, device, configs)
 
     outputs = run_inference(model, image_tensor)
 
-    predictions = post_process_predictions(outputs, binary_threshold=0.5)
+    predictions = post_process_predictions(outputs, binary_threshold=binary_threshold)
 
     return predictions
 
 
 def main(args):
     """
-    CLI for inference.
+    Use CL args to run inference on a given image.
+    Saves the outputs to the specified directory.
     """
     import os
+
     from skimage.io import imsave
 
     image_path = args.image_path
     checkpoint_path = args.checkpoint_path
+    if args.configs_path:
+        configs_path = args.configs_path
+    else:
+        configs_path = None
     device = args.device
     output_dir = args.output_dir
     overwrite = args.overwrite
     extension = args.file_extension
 
+    # verify configs
+    if configs_path is not None:
+        from hopperscapes.configs import SegmentationModelConfigs
+
+        configs = SegmentationModelConfigs.from_yaml(configs_path)
+    else:
+        configs = None
+
     os.makedirs(output_dir, exist_ok=overwrite)
 
     record_id = os.path.splitext(os.path.basename(image_path))[0]
 
-    predictions = infer(image_path, checkpoint_path, device)
+    model = load_model(checkpoint_path, configs, device)
+
+    image_arr = load_image(image_path)
+
+    predictions = infer(image_arr, configs, model, device)
 
     for head_name, prediction in predictions.items():
         head_filepath = os.path.join(
@@ -232,6 +270,11 @@ if __name__ == "__main__":
         "--checkpoint_path", required=True, help="Path to model checkpoint."
     )
     arg_parser.add_argument(
+        "--configs_path",
+        default=None,
+        help="Path to model configs file. If not provided, defaults to SegmentationModelConfigs.",
+    )
+    arg_parser.add_argument(
         "--output_dir", required=True, help="Path to output directory."
     )
     arg_parser.add_argument(
@@ -242,8 +285,8 @@ if __name__ == "__main__":
     )
     arg_parser.add_argument(
         "--file_extension",
-        default="png",
-        help="File extension for the outputs (default is PNG).",
+        default="tiff",
+        help="File extension for the outputs (default is TIFF).",
     )
 
     args = arg_parser.parse_args()

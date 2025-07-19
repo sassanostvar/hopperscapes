@@ -2,18 +2,19 @@ from pathlib import Path
 
 import pytest
 
+
 SAMPLE_IMAGE_PATH = (
     Path(__file__).parent.parent / "test_data" / "LD_F_TC_02024_0024_left_forewing.jpg"
 )
 
-
 @pytest.mark.unit
 def test_inference_pipeline_checkpoint_io():
+    from hopperscapes.configs import SegmentationModelConfigs
     from hopperscapes.segmentation.infer import load_model
 
     # no valid checkpoint to load
     with pytest.raises(ValueError):
-        _ = load_model("./checkpoint.pth", device="cpu")
+        _ = load_model("./checkpoint.pth", SegmentationModelConfigs(), device="cpu")
 
 
 @pytest.mark.unit
