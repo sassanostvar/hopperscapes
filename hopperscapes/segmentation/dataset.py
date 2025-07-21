@@ -304,8 +304,9 @@ class WingPatternDataset(Dataset):
 
         self.transform = SampleTransformer(configs=self.configs)
 
+        _file_extensions = tuple(self.configs.image_file_exts)
         self.image_ids = [
-            f for f in os.listdir(image_dir) if f.endswith(self.configs.image_file_exts)
+            f for f in os.listdir(image_dir) if f.endswith(_file_extensions)
         ]
 
         self.expected_heads = set(self.configs.out_channels.keys())

@@ -38,9 +38,9 @@ def init_seeds(seed: int = 42):
 def init_datasets(
     images_dir: str,
     masks_dir: str,
+    configs: SegmentationModelConfigs,
     batch_size: int,
-    valid_split: float = 0.2,
-    seed: int = 42,
+    valid_split: float,
 ):
     """
     Create a random train/valid split and generate the DataLoaders.
@@ -48,18 +48,18 @@ def init_datasets(
     Args:
         images_dir (str): Path to image direcotry.
         masks_dir (str): Path to the masks root directory.
+        configs (SegmentationModelConfigs): Model/dataset configurations.
         batch_size (int): Batch size for DataLoaders.
         valid_split (float): Fraction of data used for validation.
-        seed (int): Random seed (for reproducibility).
 
     Returns:
         train_loader (DataLoader): Train DataLoader.
         valid_loader (DataLoader): Valid DataLoader.
     """
 
-    init_seeds(seed)
-
-    dataset = WingPatternDataset(image_dir=images_dir, masks_dir=masks_dir)
+    dataset = WingPatternDataset(
+        image_dir=images_dir, masks_dir=masks_dir, configs=configs
+    )
 
     # split
     dataset_size = len(dataset)
@@ -98,7 +98,8 @@ class HopperNetTrainer:
         total_loss_weights: Dict[str, float],
         lr: float,
         weight_decay: float,
-        start_epoch: int,
+        start_iter: int,
+        start_epoch: int,        
         num_epochs: int,
         checkpoint_every: int,
         log_every: int,
@@ -158,8 +159,8 @@ class HopperNetTrainer:
                     for p in self.model.heads[head_name].parameters():
                         p.requires_grad = False
 
-        self.num_iters = 1
-        self.epoch = start_epoch
+        self.num_iters = 1 if start_iter is None else start_iter
+        self.start_epoch = start_epoch
         self.total_loss = None
         self.head_losses = None
 
@@ -170,9 +171,8 @@ class HopperNetTrainer:
         Runs model training. If specified, dynamically freezes/unfreezes
         heads based on given threshold Dice scores.
         """
-        for i in range(self.num_epochs):
-            #
-            self.epoch += 1
+        for epoch in range(self.start_epoch, self.start_epoch + self.num_epochs):
+            self.epoch = epoch
             logger.info("----- Starting epoch %d/%d -----", self.epoch, self.num_epochs)
 
             self.model.train()
@@ -265,8 +265,8 @@ class HopperNetTrainer:
         Run one validation epoch.
         """
         self.model.eval()
-
         total_valid_loss = 0.0
+        n_valid_batches = len(self.valid_loader)
         for sample in tqdm(
             self.valid_loader, ascii=True, desc="running validation epoch..."
         ):
@@ -284,11 +284,13 @@ class HopperNetTrainer:
                 )
             total_valid_loss += valid_loss.item()
 
-            self.writer.add_scalar(
-                "loss/valid_loss",
-                total_valid_loss,
-                self.num_iters,
-            )
+        avg_valid_loss = total_valid_loss / n_valid_batches
+
+        self.writer.add_scalar(
+            "loss/valid_loss",
+            avg_valid_loss,
+            self.epoch,
+        )
 
     # ------------- VALID LOOP END -------------------------
 
@@ -425,12 +427,16 @@ def main(args):
     )
     logger.info("heads: %s", model.heads)
 
+    # init random seeds
+    init_seeds(c.random_seed)
+
     # ---------------------------
     # ----- Load dataset --------
     # ---------------------------
     train_loader, valid_loader = init_datasets(
         images_dir=images_dir,
         masks_dir=masks_dir,
+        configs=c,
         batch_size=c.batch_size,
         valid_split=c.valid_split,
         seed=c.random_seed,
@@ -447,6 +453,7 @@ def main(args):
     )
 
     start_epoch = 0 if checkpoint is None else checkpoint["epoch"] + 1
+    start_iter = 1 if checkpoint is None else checkpoint["num_iters"] + 1
 
     trainer = HopperNetTrainer(
         model=model,
@@ -459,6 +466,7 @@ def main(args):
         weight_decay=c.weight_decay,
         start_epoch=start_epoch,
         num_epochs=c.epochs,
+        start_iter=start_iter,
         checkpoint_every=c.checkpoint_every,
         log_every=c.log_every,
         clip_gradients=c.clip_gradients,

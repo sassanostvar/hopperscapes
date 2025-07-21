@@ -111,6 +111,7 @@ def test_train_pipeline(debug=False):
         weight_decay=c.weight_decay,
         start_epoch=0,
         num_epochs=1,
+        start_iter=1,
         checkpoint_every=c.checkpoint_every,
         log_every=c.log_every,
         clip_gradients=c.clip_gradients,

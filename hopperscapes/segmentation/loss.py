@@ -289,7 +289,7 @@ class HopperNetCompositeLoss(nn.Module):
 
         # None weights default to all 1.0's
         if weights is None:
-            weights = {head: 1. for head in inputs}
+            weights = {head: 1.0 for head in inputs}
 
         total_loss = 0.0
         head_losses = {}

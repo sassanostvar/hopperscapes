@@ -44,8 +44,8 @@ class SegmentationModelConfigs:
             "domains": 3,  # 2 + background
         }
     )
-    num_groups: int = 1  # for GroupNorm
-    upsample_mode: str = "bilinear"  # or "nearest"
+    num_groups: int = 8  # for GroupNorm
+    upsample_mode: str = "bilinear"  # "bilinear" or "nearest"
 
     # training configs
     device: str = "cpu"
@@ -161,3 +161,21 @@ class SegmentationModelConfigs:
         filtered_configs = {k: v for k, v in yaml_configs.items() if k in valid_keys}
 
         return SegmentationModelConfigs(**filtered_configs)
+
+
+def main(args):
+    savepath = args.savepath
+    configs = SegmentationModelConfigs()
+    configs.to_yaml(savepath)
+    print(f"Configs saved to {savepath}")    
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Save segmentation model configs to YAML.")
+    parser.add_argument("--savepath", type=str, default="segmentation_model_configs.yaml",
+                        help="Path to save the YAML configuration file.")
+    
+    args = parser.parse_args()
+    main(args)
+    print("Segmentation model configs saved successfully.")

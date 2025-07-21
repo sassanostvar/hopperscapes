@@ -1,6 +1,5 @@
 model_name: "hopperscapes_demo"
 savedir: "./outputs/demo/models/"
-device: "cpu"
 
 in_channels: 3
 
@@ -20,8 +19,13 @@ out_channels:
   spots: 1
   domains: 3 # 2 classes + background
 
-num_groups: 1
+num_groups: 8
+upsample_mode: "bilinear" # "bilinear" or "nearest"
+
+device: "cpu"
 batch_size: 4
+valid_split: 0.2
+random_seed: 42
 num_workers: 4
 epochs: 100
 learning_rate: 0.00005

@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 from hopperscapes.configs import SegmentationModelConfigs
 
-YAML_FILEPATH = Path(__file__).parent.parent.parent / "configs" / "configs.yaml"
+YAML_FILEPATH = Path(__file__).parent.parent.parent / "configs" / "train.yaml"
 
 
 @pytest.mark.unit

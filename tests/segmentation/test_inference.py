@@ -5,7 +5,6 @@ CHECKPOINT_PATH = (
     Path(__file__).parent.parent.parent / "checkpoints" / "HopperNetLite_demo.pth"
 )
 
-
 @pytest.mark.unit
 def test_infer_load_model():
     from hopperscapes.configs import SegmentationModelConfigs
@@ -29,7 +28,6 @@ def test_infer_load_model_invalid_checkpoint():
         load_model(
             CHECKPOINT_PATH, SegmentationModelConfigs(), device="invalid_device"
         )  # Assuming the device is not valid
-
 
 def test_infer_postprocess():
     from hopperscapes.configs import SegmentationModelConfigs
