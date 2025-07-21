@@ -170,13 +170,21 @@ class HopperNetLite(nn.Module):
         return output
 
 
+MODEL_REGISTRY = {"HopperNetLite": HopperNetLite}
+
+
+def get_model(name: str, configs: Dict):
+    if name not in MODEL_REGISTRY:
+        raise ValueError(f"Model name {name} not found in registry.")
+    return MODEL_REGISTRY[name](**configs)
+
+
 def main():
     """
     Show model summary for a given input shape.
     """
     from hopperscapes.configs import SegmentationModelConfigs
     import torchinfo
-
 
     configs = SegmentationModelConfigs()
     model = HopperNetLite(

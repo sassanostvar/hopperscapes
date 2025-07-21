@@ -99,7 +99,7 @@ class HopperNetTrainer:
         lr: float,
         weight_decay: float,
         start_iter: int,
-        start_epoch: int,        
+        start_epoch: int,
         num_epochs: int,
         checkpoint_every: int,
         log_every: int,
@@ -339,6 +339,7 @@ class HopperNetTrainer:
         """
         checkpoint = {
             "epoch": self.epoch,
+            "model_id": self.model.__class__.__name__,
             "model_configs": self.model.configs,
             "model_state_dict": self.model.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),

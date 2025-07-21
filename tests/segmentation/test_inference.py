@@ -5,12 +5,15 @@ CHECKPOINT_PATH = (
     Path(__file__).parent.parent.parent / "checkpoints" / "HopperNetLite_demo.pth"
 )
 
+
 @pytest.mark.unit
 def test_infer_load_model():
     from hopperscapes.configs import SegmentationModelConfigs
     from hopperscapes.segmentation.infer import load_model
 
-    model = load_model(CHECKPOINT_PATH, SegmentationModelConfigs(), device="cpu")
+    model = load_model(
+        CHECKPOINT_PATH, "HopperNetLite", SegmentationModelConfigs(), device="cpu"
+    )
     assert model is not None
 
 
@@ -19,15 +22,29 @@ def test_infer_load_model_invalid_checkpoint():
     from hopperscapes.segmentation.infer import load_model
 
     with pytest.raises(TypeError):
-        load_model(12345, SegmentationModelConfigs(), device="cpu")
-
-    with pytest.raises(ValueError):
-        load_model("non_existent_checkpoint.pth", SegmentationModelConfigs(), device="cpu")
+        load_model(12345, "HopperNetLite", SegmentationModelConfigs(), device="cpu")
 
     with pytest.raises(ValueError):
         load_model(
-            CHECKPOINT_PATH, SegmentationModelConfigs(), device="invalid_device"
+            "non_existent_checkpoint.pth",
+            "HopperNetLite",
+            SegmentationModelConfigs(),
+            device="cpu",
+        )
+
+    with pytest.raises(ValueError):
+        load_model(
+            CHECKPOINT_PATH,
+            "HopperNetLite",
+            SegmentationModelConfigs(),
+            device="invalid_device",
         )  # Assuming the device is not valid
+
+    with pytest.raises(ValueError):
+        load_model(
+            CHECKPOINT_PATH, "InvalidModelID", SegmentationModelConfigs(), device="cpu"
+        )  # Assuming the device is not valid
+
 
 def test_infer_postprocess():
     from hopperscapes.configs import SegmentationModelConfigs
@@ -45,7 +62,7 @@ def test_infer_postprocess():
     )  # converts to tensor and adds batch dimension
 
     model = load_model(
-        CHECKPOINT_PATH, SegmentationModelConfigs(), device="cpu"
+        CHECKPOINT_PATH, "HopperNetLite", SegmentationModelConfigs(), device="cpu"
     )
     model.eval()
     with torch.no_grad():

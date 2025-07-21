@@ -16,14 +16,18 @@ from hopperscapes.segmentation.dataset import SampleTransformer
 
 
 def load_model(
-    checkpoint_path: str, configs: SegmentationModelConfigs, device: str = "cpu"
+    checkpoint_path: str,
+    model_id: str = None,
+    configs: SegmentationModelConfigs = None,
+    device: str = "cpu",
 ) -> nn.Module:
     """
     Load model from checkpoint.
     Args:
         checkpoint_path (str): Path to the model checkpoint.
+        model_id (str): Model class name to query the registry with.
         configs (SegmentationModelConfigs): Model configurations.
-        If not provided, defaults to SegmentationModelConfigs.
+            If not provided, defaults to SegmentationModelConfigs.
         device (str): Device to load the model on (default is "cpu").
     Returns:
         nn.Module: Loaded model.
@@ -45,6 +49,13 @@ def load_model(
             f"Failed to load model at {checkpoint_path} to {device}"
         ) from e
 
+    if not model_id:
+        model_id = checkpoint.get("model_id")
+        if not model_id:
+            raise ValueError(
+                "Checkpoint must contain 'model_id' matching a valid model."
+            )
+
     model_configs = {
         "num_groups": configs.num_groups,
         "in_channels": configs.in_channels,
@@ -52,7 +63,7 @@ def load_model(
         "upsample_mode": configs.upsample_mode,
     }
 
-    model = models.HopperNetLite(**model_configs)
+    model = models.get_model(model_id, model_configs)
 
     try:
         model.load_state_dict(checkpoint["model_state_dict"])
@@ -244,7 +255,7 @@ def main(args):
 
     record_id = os.path.splitext(os.path.basename(image_path))[0]
 
-    model = load_model(checkpoint_path, configs, device)
+    model = load_model(checkpoint_path=checkpoint_path, configs=configs, device=device)
 
     image_arr = load_image(image_path)
 
@@ -254,7 +265,7 @@ def main(args):
         head_filepath = os.path.join(
             output_dir, f"{record_id}_seg_{head_name}.{extension}"
         )
-        imsave(head_filepath, prediction)
+        imsave(head_filepath, prediction.astype(np.uint8))
 
 
 if __name__ == "__main__":

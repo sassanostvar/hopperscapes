@@ -2,10 +2,14 @@ from pathlib import Path
 
 import pytest
 
+CHECKPOINT_PATH = (
+    Path(__file__).parent.parent.parent / "checkpoints" / "invalid_checkpoint.pth"
+)
 
 SAMPLE_IMAGE_PATH = (
     Path(__file__).parent.parent / "test_data" / "LD_F_TC_02024_0024_left_forewing.jpg"
 )
+
 
 @pytest.mark.unit
 def test_inference_pipeline_checkpoint_io():
@@ -14,7 +18,9 @@ def test_inference_pipeline_checkpoint_io():
 
     # no valid checkpoint to load
     with pytest.raises(ValueError):
-        _ = load_model("./checkpoint.pth", SegmentationModelConfigs(), device="cpu")
+        _ = load_model(
+            CHECKPOINT_PATH, "HoppeNetLite", SegmentationModelConfigs(), device="cpu"
+        )
 
 
 @pytest.mark.unit
