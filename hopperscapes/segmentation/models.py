@@ -429,13 +429,16 @@ def main(args):
     import yaml
 
     configs_filepath = args.model_configs
-    with open(configs_filepath, "r") as f:
-        configs = yaml.safe_load(f)
+    if configs_filepath:
+        with open(configs_filepath, "r") as f:
+            configs = yaml.safe_load(f)
 
-    model_configs = configs["params"]
-    model = get_model(name=configs["name"], configs=model_configs)
-
-    torchinfo.summary(model, input_size=(1, 3, 512, 512))
+        model_configs = configs["params"]
+        model = get_model(name=configs["name"], configs=model_configs)
+        torchinfo.summary(model, input_size=(1, 3, 512, 512))
+    else:
+        model = ModularHopperNet(in_channels=3, out_channels={"head1": 1, "head2": 2})
+        torchinfo.summary(model, input_size=(1, 3, 512, 512))
 
 
 if __name__ == "__main__":
@@ -445,7 +448,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_configs",
         type=str,
-        default=None,
+        required=False,
         help="Path to model configuration file (YAML).",
     )
     args = parser.parse_args()

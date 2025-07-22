@@ -116,7 +116,7 @@ class HopperNetLite(nn.Module):
         self.heads = nn.ModuleDict()
         for head in heads:
             self.heads[head] = nn.Sequential(
-                nn.Conv2d(32, out_channels[head], 1, 1, 0, 1),
+                nn.Conv2d(16, out_channels[head], 1, 1, 0, 1),
             )
 
     def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
@@ -183,13 +183,12 @@ def main():
     """
     Show model summary for a given input shape.
     """
-    from hopperscapes.configs import SegmentationModelConfigs
     import torchinfo
 
-    configs = SegmentationModelConfigs()
     model = HopperNetLite(
-        num_groups=configs.num_groups,
-        out_channels=configs.out_channels,
+        num_groups=8,
+        in_channels=3,
+        out_channels={"head1": 1, "head2": 2},
     )
     torchinfo.summary(model, input_size=(1, 3, 512, 512))
 
