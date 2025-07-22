@@ -1,0 +1,13 @@
+# configs/data/transforms.yaml
+
+image_file_exts: [".png", ".jpg"]
+
+image_transforms:
+  ResizeToLongestSide:
+    image_side_length: 512
+  # ConvertToHSV: {}
+  PrepareImageTensor: {}
+
+mask_transforms:
+  ResizeToLongestSide:
+    image_side_length: 512

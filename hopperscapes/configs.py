@@ -12,14 +12,14 @@ class SegmentationModelConfigs:
     Configuration for data prep and model training
     """
 
-    model_name: str = "hopperscapes_demo"
+    experiment_id: str = "hopperscapes_demo"
     savedir: str = "./outputs/demo/models"
 
-    in_channels: int = 3  # RGB, HSV, ...
+    # -------------------------------
+    # ------- DATASET CONFIGS -------
+    # -------------------------------
 
-    image_file_exts: Tuple[str] = field(
-        default_factory=lambda: (".png", ".jpg")
-    )
+    image_file_exts: Tuple[str] = field(default_factory=lambda: (".png", ".jpg"))
 
     image_transforms: Dict = field(
         default_factory=lambda: {
@@ -35,6 +35,11 @@ class SegmentationModelConfigs:
         }
     )
 
+    # -------------------------------
+    # -------- MODEL CONFIGS --------
+    # -------------------------------
+
+    in_channels: int = 3  # RGB, HSV, ...
     # model heads and channel counts
     out_channels: Dict[str, int] = field(
         default_factory=lambda: {
@@ -47,7 +52,49 @@ class SegmentationModelConfigs:
     num_groups: int = 8  # for GroupNorm
     upsample_mode: str = "bilinear"  # "bilinear" or "nearest"
 
-    # training configs
+    encoder_configs: Dict = field(
+        default_factory=lambda: {
+            "stem": {
+                "out_channels": 16,
+                "stride": 1,
+                "concat": True,
+            },
+            "encoder0_ds": {
+                "out_channels": 32,
+                "stride": 2,
+                "concat": False,
+            },
+            "encoder1_conv": {
+                "out_channels": 32,
+                "stride": 1,
+                "concat": True,
+            },
+            "encoder1_ds": {
+                "out_channels": 64,
+                "stride": 2,
+                "concat": False,
+            },
+        }
+    )
+
+    bottleneck_configs: Dict = field(
+        default_factory=lambda: {
+            "b_neck1": {"out_channels": 128},
+            "b_neck2": {"out_channels": 64},
+        }
+    )
+
+    # Upsample -> Reduce (optional) -> Mix
+    decoder_configs: Dict = field(
+        default_factory=lambda: {
+            "decoder1": {"reduce_channels": 32, "mixer_out_channels": [32, 16]},
+            "decoder0": {"reduce_channels": None, "mixer_out_channels": [16, 16]},
+        }
+    )
+
+    # -------------------------------
+    # ------ TRAINING CONFIGS -------
+    # -------------------------------
     device: str = "cpu"
     batch_size: int = 4
     valid_split: float = 0.2
@@ -61,7 +108,7 @@ class SegmentationModelConfigs:
     warmup_epochs: int = 10
     warmup_lr: float = 1e-6
     checkpoint_every: int = 10
-    log_every: int = 10
+    log_every: int = 1
     save_best: bool = True
     clip_gradients: bool = True
     max_grad_norm: float = 1.0
@@ -141,8 +188,8 @@ class SegmentationModelConfigs:
         with open(yaml_path, "w") as f:
             yaml.safe_dump(asdict(self), f, sort_keys=False)
 
-    @staticmethod
-    def from_yaml(yaml_path: str) -> "SegmentationModelConfigs":
+    @classmethod
+    def from_yaml(cls, yaml_path: str) -> "SegmentationModelConfigs":
         """
         Load configs from YAML file.
 
@@ -160,22 +207,56 @@ class SegmentationModelConfigs:
         valid_keys = SegmentationModelConfigs.__dataclass_fields__.keys()
         filtered_configs = {k: v for k, v in yaml_configs.items() if k in valid_keys}
 
-        return SegmentationModelConfigs(**filtered_configs)
+        return cls(**filtered_configs)
+
+    @classmethod
+    def from_yaml_files(
+        cls,
+        model_configs_path: str,
+        dataset_configs_path: str,
+        training_configs_path: str,
+    ) -> "SegmentationModelConfigs":
+        import yaml
+
+        with open(model_configs_path, "r") as f:
+            model_configs = yaml.safe_load(f).get("params", {})
+
+        with open(dataset_configs_path, "r") as f:
+            dataset_configs = yaml.safe_load(f)
+
+        with open(training_configs_path, "r") as f:
+            training_configs = yaml.safe_load(f)
+
+        # merge
+        merged_configs = {**model_configs, **dataset_configs, **training_configs}
+
+        # validate
+        valid_keys = cls.__dataclass_fields__.keys()
+        final_configs = {k: v for k, v in merged_configs.items() if k in valid_keys}
+
+        return cls(**final_configs)
 
 
 def main(args):
     savepath = args.savepath
     configs = SegmentationModelConfigs()
     configs.to_yaml(savepath)
-    print(f"Configs saved to {savepath}")    
+    print(f"Configs saved to {savepath}")
+
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Save segmentation model configs to YAML.")
-    parser.add_argument("--savepath", type=str, default="segmentation_model_configs.yaml",
-                        help="Path to save the YAML configuration file.")
-    
+    parser = argparse.ArgumentParser(
+        description="Save segmentation model configs to YAML."
+    )
+    parser.add_argument(
+        "--savepath",
+        type=str,
+        default="segmentation_model_configs.yaml",
+        help="Path to save the YAML configuration file.",
+    )
+
     args = parser.parse_args()
     main(args)
     print("Segmentation model configs saved successfully.")

@@ -61,6 +61,9 @@ def load_model(
         "in_channels": configs.in_channels,
         "out_channels": configs.out_channels,
         "upsample_mode": configs.upsample_mode,
+        'encoder_configs': configs.encoder_configs,
+        'bottleneck_configs': configs.bottleneck_configs,
+        'decoder_configs': configs.decoder_configs,
     }
 
     model = models.get_model(model_id, model_configs)

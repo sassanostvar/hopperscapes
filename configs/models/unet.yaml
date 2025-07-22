@@ -1,0 +1,47 @@
+# Defines the architecture for the ModularHopperNet model.
+
+model_id: ModularHopperNet
+params:
+  # General model parameters
+  num_groups: 8
+  in_channels: 3
+  upsample_mode: 'bilinear'
+  out_channels:
+    wing: 1
+    spots: 1
+    veins: 1
+    domains: 3 # 2 + background
+
+  # --- Architecture Definition ---
+
+  encoder_configs:
+    stem:
+      out_channels: 16
+      stride: 1
+      concat: true
+    encoder0_ds:
+      out_channels: 32
+      stride: 2
+      concat: false
+    encoder1_conv:
+      out_channels: 32
+      stride: 1
+      concat: true
+    encoder1_ds:
+      out_channels: 64
+      stride: 2
+      concat: false
+
+  bottleneck_configs:
+    b_neck1:
+      out_channels: 128
+    b_neck2:
+      out_channels: 64
+
+  decoder_configs:
+    decoder1:
+      reduce_channels: 32
+      mixer_out_channels: [32, 16]
+    decoder0:
+      reduce_channels: null
+      mixer_out_channels: [16, 16]

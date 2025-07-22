@@ -21,7 +21,7 @@ from tqdm import tqdm
 from hopperscapes.configs import SegmentationModelConfigs
 from hopperscapes.segmentation import loss
 from hopperscapes.segmentation.dataset import WingPatternDataset, hopper_collate_fn
-from hopperscapes.segmentation.models import HopperNetLite
+from hopperscapes.segmentation.models import ModularHopperNet
 
 logger = logging.getLogger("HopperNetTrainingLog")
 
@@ -97,6 +97,7 @@ class HopperNetTrainer:
         criteria: nn.Module,
         total_loss_weights: Dict[str, float],
         lr: float,
+        lr_scheduler: str,
         weight_decay: float,
         start_iter: int,
         start_epoch: int,
@@ -123,6 +124,7 @@ class HopperNetTrainer:
             self.global_loss_weights.copy() if self.global_loss_weights else {}
         )
         self.lr = lr
+        self.lr_scheduler = lr_scheduler
         self.weight_decay = weight_decay
         self.num_epochs = num_epochs
         self.checkpoint_every = checkpoint_every
@@ -149,6 +151,14 @@ class HopperNetTrainer:
             lr=self.lr,
             weight_decay=self.weight_decay,
         )
+
+        # learning rate scheduler
+        if self.lr_scheduler == "cosine":
+            self.lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(
+                self.optimizer, T_max=self.num_epochs, eta_min=1e-6
+            )
+        else:
+            self.lr_scheduler = None
 
         # freeze heads if specified
         if self.freeze_heads is not None:
@@ -252,10 +262,14 @@ class HopperNetTrainer:
             # update
             self.optimizer.step()
 
+            # update learning rate
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
+
             # update dice scores
             self.update_dice_scores(logits=logits, targets=masks, clipping_masks=None)
 
-            # incremet
+            # increment
             self.num_iters += 1
             n_batches += 1
 
@@ -343,6 +357,9 @@ class HopperNetTrainer:
             "model_configs": self.model.configs,
             "model_state_dict": self.model.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),
+            "sheduler_state_dict": (self.lr_scheduler.state_dict()
+                if self.lr_scheduler is not None
+                else None),
             "total_loss": self.total_loss,
             "head_losses": self.head_losses,
             "dice_scores": self.dice_scores,
@@ -391,6 +408,12 @@ class HopperNetTrainer:
                     self.num_iters,
                 )
 
+            self.writer.add_scalar(
+                "hyperparameters/lr",
+                self.optimizer.param_groups[0]["lr"],
+                self.num_iters,
+            )
+
 
 def main(args):
     """
@@ -413,9 +436,16 @@ def main(args):
     # ---------------------------
     # ----- Set up model --------
     # ---------------------------
-    model = HopperNetLite(
-        num_groups=c.num_groups,  # for GroupNorm
+    # model = HopperNetLite(
+    #     num_groups=c.num_groups,  # for GroupNorm
+    #     out_channels=c.out_channels,
+    # )
+    model = ModularHopperNet(
+        num_groups=c.num_groups,
         out_channels=c.out_channels,
+        encoder_configs=c.encoder_configs,
+        bottleneck_configs=c.bottleneck_configs,
+        decoder_configs=c.decoder_configs
     )
 
     checkpoint = None
@@ -440,12 +470,11 @@ def main(args):
         configs=c,
         batch_size=c.batch_size,
         valid_split=c.valid_split,
-        seed=c.random_seed,
     )
 
     savedir = os.path.join(
         c.savedir,
-        c.model_name,
+        c.experiment_id,
     )
 
     loss_criteria = loss.HopperNetCompositeLoss(
@@ -464,6 +493,7 @@ def main(args):
         criteria=loss_criteria,
         total_loss_weights=c.total_loss_weights,
         lr=c.learning_rate,
+        lr_scheduler=c.lr_scheduler,
         weight_decay=c.weight_decay,
         start_epoch=start_epoch,
         num_epochs=c.epochs,
@@ -477,6 +507,13 @@ def main(args):
         device=c.device,
         savedir=savedir,
     )
+
+    # load optimizer state if available
+    if checkpoint is not None:
+        trainer.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        if "scheduler_state_dict" in checkpoint and checkpoint["scheduler_state_dict"] is not None:
+            trainer.lr_scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+
     trainer.train()
 
 

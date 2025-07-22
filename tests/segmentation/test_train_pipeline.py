@@ -82,7 +82,7 @@ def test_train_pipeline(debug=False):
 
     c = SegmentationModelConfigs()
 
-    model = models.HopperNetLite(
+    model = models.ModularHopperNet(
         num_groups=c.num_groups,  # for GroupNorm
         out_channels=c.out_channels,
     )
@@ -108,6 +108,7 @@ def test_train_pipeline(debug=False):
         criteria=loss_criteria,
         total_loss_weights=c.total_loss_weights,
         lr=c.learning_rate,
+        lr_scheduler=None,
         weight_decay=c.weight_decay,
         start_epoch=0,
         num_epochs=1,

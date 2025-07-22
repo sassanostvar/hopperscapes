@@ -7,7 +7,7 @@ import torch
 from skimage.io import imread
 
 from hopperscapes.imageproc import preprocess
-from hopperscapes.segmentation.models import HopperNetLite
+from hopperscapes.segmentation.models import ModularHopperNet
 
 TEST_DATA_PATH = (
     Path(__file__).parent.parent / "test_data" / "LD_F_TC_02024_0024_left_forewing.jpg"
@@ -42,7 +42,7 @@ def test_network_forward_pass(debug=False):
 
     heads = SegmentationModelConfigs().out_channels
 
-    model = HopperNetLite(
+    model = ModularHopperNet(
         num_groups=1,  # for GroupNorm
         out_channels=heads,  # use the heads from the config
     )

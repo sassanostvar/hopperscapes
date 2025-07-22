@@ -1,0 +1,123 @@
+experiment_id: hopperscapes_smoke_test
+savedir: ./outputs/demo/models
+image_file_exts:
+- .png
+- .jpg
+image_transforms:
+  ResizeToLongestSide:
+    image_side_length: 512
+  PrepareImageTensor: {}
+mask_transforms:
+  ResizeToLongestSide:
+    image_side_length: 512
+in_channels: 3
+out_channels:
+  wing: 1
+  veins: 1
+  spots: 1
+  domains: 3
+num_groups: 8
+upsample_mode: bilinear
+encoder_configs:
+  stem:
+    out_channels: 16
+    stride: 1
+    concat: true
+  encoder0_ds:
+    out_channels: 32
+    stride: 2
+    concat: false
+  encoder1_conv:
+    out_channels: 32
+    stride: 1
+    concat: true
+  encoder1_ds:
+    out_channels: 64
+    stride: 2
+    concat: false
+bottleneck_configs:
+  b_neck1:
+    out_channels: 128
+  b_neck2:
+    out_channels: 64
+decoder_configs:
+  decoder1:
+    reduce_channels: 32
+    mixer_out_channels:
+    - 32
+    - 16
+  decoder0:
+    reduce_channels: null
+    mixer_out_channels:
+    - 16
+    - 16
+device: cpu
+batch_size: 4
+valid_split: 0.2
+random_seed: 42
+num_workers: 4
+epochs: 200
+learning_rate: 5.0e-05
+weight_decay: 0.0
+lr_scheduler: cosine
+lr_scheduler_params: {}
+warmup_epochs: 10
+warmup_lr: 1.0e-06
+checkpoint_every: 10
+log_every: 1
+save_best: true
+clip_gradients: true
+max_grad_norm: 1.0
+total_loss_weights:
+  wing: 1.0
+  veins: 1.0
+  spots: 1.0
+  domains: 1.0
+dice_thresholds_to_freeze_heads:
+  wing: 1.0
+  veins: 0.95
+  spots: 0.95
+  domains: 0.95
+loss_function_configs:
+  wing:
+    bce:
+      weight: 1.0
+      params:
+        pos_weight: 5.0
+    soft_dice:
+      weight: 1.0
+      params: {}
+  veins:
+    bce:
+      weight: 0.5
+      params:
+        pos_weight: 100.0
+    soft_dice:
+      weight: 2.0
+      params: {}
+    cldice:
+      weight: 2.0
+      params: {}
+  spots:
+    focal:
+      weight: 1.0
+      params:
+        alpha: 0.85
+        gamma: 2.0
+    soft_dice:
+      weight: 1.0
+      params: {}
+  domains:
+    ce:
+      weight: 1.0
+      params: {}
+freeze_heads:
+  wing: false
+  veins: false
+  spots: false
+  domains: false
+dice_scores_to_track:
+  wing: soft_dice
+  veins: cldice
+  spots: soft_dice
+  domains: soft_dice

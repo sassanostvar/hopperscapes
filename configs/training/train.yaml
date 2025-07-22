@@ -1,26 +1,7 @@
-model_name: "hopperscapes_demo"
+# configs/training/train.yaml
+
+experiment_id: "hopperscapes_demo"
 savedir: "./outputs/demo/models/"
-
-in_channels: 3
-
-image_transforms:
-  ResizeToLongestSide:
-    image_side_length: 512
-  ConvertToHSV: {}
-  PrepareImageTensor: {}
-
-mask_transforms:
-  ResizeToLongestSide:
-    image_side_length: 512
-
-out_channels:
-  wing: 1
-  veins: 1
-  spots: 1
-  domains: 3 # 2 classes + background
-
-num_groups: 8
-upsample_mode: "bilinear" # "bilinear" or "nearest"
 
 device: "cpu"
 batch_size: 4
