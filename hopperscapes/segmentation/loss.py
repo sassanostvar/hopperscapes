@@ -132,16 +132,19 @@ def cldice_loss(
     numerator = 2 * tp * ts
     denominator = tp + ts
 
-    # cldice = (numerator + eps) / (denominator + eps)
+    # Default to worst-case scenario
+    cldice_per_item = torch.zeros_like(numerator, dtype=torch.float32)
 
-    # guard against all zeros yielding a perfect cldice
-    cldice_per_item = torch.ones_like(numerator, dtype=torch.float32)
     _valid_mask = denominator > 0.0
     cldice_per_item[_valid_mask] = (numerator[_valid_mask] + eps) / (
         denominator[_valid_mask] + eps
     )
 
-    # CLIP THE CLDICE VALUE TO PREVENT IT FROM EXCEEDING 1.0
+    # Are the grouth truth and prediction skeletons both empty?
+    perfect_match = (skel_gt.sum(dim=(2, 3)) == 0) & (skel_pred.sum(dim=(2, 3)) == 0)
+    cldice_per_item[perfect_match] = 1.0
+
+    # Clamp to (0,1) to prevent blow-ups
     cldice = torch.clamp(cldice_per_item, min=0.0, max=1.0)
 
     # return 1 - cldice
