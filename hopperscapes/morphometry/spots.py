@@ -1,5 +1,5 @@
 """
-Methods to quantify morphological features of spot patterns.
+Methods to quantify morphological features of spots/blob-like patterns.
 """
 
 
