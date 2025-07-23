@@ -54,7 +54,7 @@ To install the package, create a new Python environment and clone the repository
 Note: The project is currently under active development, and the API may change.
 
 ## Dependencies
-The core functionality relies on PyTorch, torchvision, scikit-image, zarr, ome-zar, Dask, and NetworkX.
+The core functionality relies on PyTorch, torchvision, scikit-image, zarr, ome-zarr, Dask, and NetworkX.
 
 See [requirements.txt](requirements.txt) for the full list.
 
@@ -86,7 +86,7 @@ Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-
 This basic structure is expanded to incorporate segmentations, reconstructions, and other derived representations.
 
 ## Data Sources
-Local sources of _L. delicatula_ specimens include Morningside Heights, New York City and Hudson River Valley, New York. Web sources of the cross-species dataset include Wikipedia Commons, iNaturalist, and FLOW hemiptera databases.
+Local sources of _L. delicatula_ specimens include Morningside Heights (New York City) and Hudson River Valley (New York). Web sources of the cross-species dataset include Wikimedia Commons, iNaturalist, and FLOW (Hemiptera) database.
 
 ## Sample Workflows
 
@@ -100,7 +100,7 @@ The core segmentation, image processing, and morphometry modules can be chained 
 
 <p align="center"><img src="assets/spots_morphometry_pipeline.gif" alt="spots morphometry" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>A sample object detection and morphometry pipeline to study the spots pattern</p>
 
-<p align="center"><img src="assets/animated_network.gif" alt="network reconstruction" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>A sample reconstruction pipeline for the ventation network</p>
+<p align="center"><img src="assets/animated_network.gif" alt="network reconstruction" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>A sample reconstruction pipeline for the venation network</p>
 
 
 ## Status & Roadmap

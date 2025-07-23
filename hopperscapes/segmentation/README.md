@@ -2,7 +2,7 @@
 
 Quantitative analysis of wing morphology and patterning requires accurate localization of features of interest in imaging data. We pose the localization of structural features as a multi-task semantic segmentation problem. 
 
-Depending on the species, some features, like the wing outline, spots, and pigmentation domains, are more or less straightforward to segment Other features, like the venation network, can be challenging to segment when sample illumination is not optimal and the venation network is occluded by other features. 
+Depending on the species, some features, like the wing outline, spots, and pigmentation domains, are more or less straightforward to segment. Other features, like the venation network, can be challenging to segment when sample illumination is not optimal and the venation network is occluded by other features. 
 
 Here, we adopt a multi-step, multi-resolution approach to the segmentation problem, using UNet variants, as outlined below.
 
@@ -22,7 +22,7 @@ Here, we adopt a multi-step, multi-resolution approach to the segmentation probl
 ### Network Architecture
 We start with compact, multi-head U-Nets with 80-200k parameters and configurable heads supporting semantic segmentation of coarse morphological features. We train the model on downsampled and padded images (512x512 or 1024x1024), allowing the task-specific heads to share the same encoder and decoder.
 
-<p align="center"><img src="../../assets/UNet_Lite.png" alt="U-Net Lite" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>Highly compact instance of ModularHopperNet used in preprocessing
+<p align="center"><img src="../../assets/UNet_Lite.png" alt="U-Net Lite" style="width: 100%; max-width: 350px; border-radius: 0px;"><br>Highly compact instance of ModularHopperNet used in preprocessing
 </p>
 
 The configurable multi-head architecture provides flexibility to experiment with feature sets across species.
@@ -36,10 +36,10 @@ The compact model provides the initial feature masks for preprocessing and datas
 
 
 ### Loss Function
-The composite loss function is defined in [loss.py](../segmentation/loss.py) and configured in [configs.py](../configs.py) or via [~/configs](../../configs). The loss function is configured to accommodate task-specific mask morphologies and class imbalance. For instance, we use binary cross-entropy (BCE) and soft Dice loss for wings, focal loss and soft Dice loss for spots, and a combination of BCE, soft Dice, and soft-cLDice for veins: 
+The composite loss function is defined in [loss.py](../segmentation/loss.py) and configured in [configs.py](../configs.py) or via [~/configs](../../configs). The loss function is configured to accommodate task-specific mask morphologies and class imbalance. For instance, we use binary cross-entropy (BCE) and soft Dice loss for wings, focal loss and soft Dice loss for spots, and a combination of BCE, soft Dice, and (soft) clDice for veins: 
 - wing: bce + soft_dice
 - spots: focal + soft_dice
-- veins: bce + soft_dice + soft-clDice
+- veins: bce + soft_dice + clDice
 - domains: ce (+ soft_dice)
 
 We use the cross-entropy loss for multi-class tasks like pigmentation domains.
@@ -88,7 +88,7 @@ Full files in: [~/configs](../../configs).
 We use gradient clipping to promote stable early training. We also dynamically freeze and unfreeze the heads, based on preset Dice score thresholds, to ensure all task-specific heads receive sufficient gradients. 
 
 ### Performance
-In practive, the wing outline and pigmentation domain Dice scores saturate quickly, followed by the spots.
+In practice, the wing outline and pigmentation domain Dice scores saturate quickly, followed by the spots.
 
 <p align="center"><img src="../../assets/seg.gif" alt="Sample Training Performance" style="width: 100%; max-width: 600px; border-radius: 0px;"></p>
 
@@ -97,7 +97,7 @@ The compact network trained on downsampled images struggles with the intricate v
 ## Usage
 
 ### Datasets
-Custom pytorch Dataset classes and collate functions are defined in [segmentation.dataset.py](../segmentation/dataset.py).
+Custom PyTorch Dataset classes and collate functions are defined in [segmentation.dataset.py](../segmentation/dataset.py).
 
 The model can be trained on data that are organized in a directory structure like the following: 
 
