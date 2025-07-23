@@ -61,7 +61,7 @@ See [requirements.txt](requirements.txt) for the full list.
 ## Data
 Data curation for the project is ongoing. Part of the effort is focused on sampling established Northeast populations of _L. delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are recorded and organized as specified in [hopperscapes.data.record.py](./hopperscapes/data/record.py).
 
-<p align="center"><img src="assets/wing_alignment.gif" alt="segmentation and alignment of light microscopy data" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>segmentation and alignment of light microscopy data</p>
+<p align="center"><img src="assets/wing_alignment.gif" alt="segmentation and alignment of light microscopy data" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>Segmentation and alignment of light microscopy data</p>
 
 
 ## Dataset structure
