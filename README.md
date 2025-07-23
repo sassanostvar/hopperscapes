@@ -4,18 +4,19 @@
 ![Python](https://img.shields.io/badge/python-3.9+-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-pytest-green)
-![Coverage](https://img.shields.io/badge/coverage-73%25-yellowgreen)
+![Coverage](https://img.shields.io/badge/coverage-76%25-yellowgreen)
 ![Status](https://img.shields.io/badge/status-alpha-orange)
 ![CI](https://github.com/sassanostvar/hopperscapes/actions/workflows/tests.yml/badge.svg)
 
+> ** demo alpha - july 2025 **
+
 <p align='center'>Mapping and representation learning of forewing morphology and patterning in planthoppers</p>
 
-> ** demo alpha - july 2025 **
 ## Overview
 
-Planthoppers have evolved intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) applies representation learning to the underlying _morpho-chromospace_, seeking to link the evolving tegminal material ecology to shared developmental roots and fundamental biophysical principles.
+Planthoppers have evolved intricate and diverse forewing compositions. [HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) applies representation learning to the underlying _morpho-chromospace_, toward understanding tegminal material ecologies in terms of shared developmental roots and fundamental biophysical principles.
 
-This repository compiles a toolset for quantitative analysis of light microscopy and photographic images of tegmina, including utilities for dataset management, image processing, semantic segmentation, morphometry, and reconstruction.
+This growing repository compiles a toolset for quantitative analysis of light microscopy and photographic images of tegmina, including utilities for dataset management, image processing, semantic segmentation, morphometry, and reconstruction.
 
 ## Repository Structure
 This repository is organized as follows:
@@ -28,6 +29,8 @@ This repository is organized as follows:
     │   └── morphometry
     │
     ├── assets
+    ├── checkpoints
+    ├── configs
     ├── docs
     ├── notebooks
     ├── scripts
@@ -37,7 +40,7 @@ Each module's components, functions, and implementation choices are outlined in 
 
 - hopperscapes.data
 - hopperscapes.imageproc
-- [hopperscapes.segmentation](./hopperscapes/segmentation/README.md)
+- [hopperscapes.segmentation](./hopperscapes/segmentation)
 - hopperscapes.morphometry
 
 ## Installation
@@ -48,11 +51,18 @@ To install the package, create a new Python environment and clone the repository
 % python -m pip install -r requirements.txt
 % python -m pip install -e .
 ```
-
 Note: The project is currently under active development, and the API may change.
+
+## Dependencies
+The core functionality relies on PyTorch, torchvision, scikit-image, zarr, ome-zar, Dask, and NetworkX.
+
+See [requirements.txt](requirements.txt) for the full list.
 
 ## Data
 Data curation for the project is ongoing. Part of the effort is focused on sampling established Northeast populations of _L. delicatula_. Locally sourced specimens are imaged using transmitted light microscopy. Specimen collection and imaging metadata are recorded and organized as specified in [hopperscapes.data.record.py](./hopperscapes/data/record.py).
+
+<p align="center"><img src="assets/wing_alignment.gif" alt="normalization" style="width: 100%; max-width: 500px; border-radius: 0px;"><br> Segmentation and alignment of light microscopy data</p>
+
 
 ## Dataset structure
 Light microscopy data are organized using [ome-zarr](https://github.com/ome/ome-zarr-py) according to the specifications in [hopperscapes/data/zarr_store.py](hopperscapes/data/zarr_store.py):
@@ -78,11 +88,18 @@ This basic structure is expanded to incorporate segmentations, reconstructions, 
 ## Data Sources
 Local sources of _L. delicatula_ specimens include Morningside Heights, New York City and Hudson River Valley, New York. Web sources of the cross-species dataset include Wikipedia Commons, iNaturalist, and FLOW hemiptera databases.
 
-## Workflows
+## Sample Workflows
 
-### Preprocessing & Standardization
+<!-- ### Preprocessing & Standardization
 
-<p align="center"><img src="assets/wing_alignment.gif" alt="normalization" style="width: 100%; max-width: 500px; border-radius: 0px;"></p>
+<p align="center"><img src="assets/wing_alignment.gif" alt="normalization" style="width: 100%; max-width: 300px; border-radius: 0px;"></p> -->
+
+For a minimal demo of the segmentation model, see [notebooks/demo_pretrained_unet.ipynb](notebooks/demo_pretrained_unet.ipynb).
+
+We are actively building on the segmentation, image processing, and morphometry core modules to create standardized pipelines supporting the project's main research objectives.
+
+<p align="center"><img src="assets/spots_morphometry_pipeline.gif" alt="spots morphometry" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>A sample object detection and morphometry pipeline to study the spots pattern</p>
+
 
 ## Status & Roadmap
 
@@ -91,7 +108,7 @@ We are developing the project in public. We reached the 1500 specimen mark in 20
 For more details on the project roadmap, please visit [STATUS.md](STATUS.md).
 
 ## Acknowledgements
-[HopperScapes](https://github.com/sassanostvar/hopperscapes/tree/main) was designed and executed by [Sassan Ostvar](https://sassanostvar.github.io). We are grateful to Columbia University Public Safety and members of the Mechanical Engineering Graduate Association (MEGA) for assistance during sample collection.
+We are grateful to Columbia University Public Safety and members of the Mechanical Engineering Graduate Association (MEGA) for assistance during sample collection. HopperScapes was designed and executed by Sassan Ostvar.
 
 ## Citation
 _forthcoming_
