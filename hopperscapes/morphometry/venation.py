@@ -18,18 +18,24 @@ class VenationMorphometer:
         pass
 
     def _thin_and_skeletonize(self, mask: np.ndarray) -> np.ndarray:
-        """
-        """
+        """ """
         _thin_mask = thin(mask)
-        return skeletonize(_thin_mask > 0)        
+        return skeletonize(_thin_mask > 0)
 
-    def run(self, binary_mask: np.ndarray, prune: bool = True) -> Graph:
+    def run(
+        self,
+        binary_mask: np.ndarray,
+        prune: bool = True,
+        min_node_degree: int = MIN_NODE_DEGREE,
+    ) -> Graph:
         """
         Computes the skeleton graph from a binary mask.
 
         Args:
             binary_mask (np.ndarray): Binary mask image.
-            prune (bool): Whether to prune the graph by removing nodes with degree less than MIN_NODE_DEGREE.
+            prune (bool): Whether to prune the graph by removing nodes with degree 
+                        less than min_node_degree.
+            min_node_degree (int): Minimum degree of nodes to keep in the graph.
 
         Returns:
             nx.Graph: Graph representation of the skeleton.
@@ -38,17 +44,19 @@ class VenationMorphometer:
             raise ValueError(f"Expect 2D binary mask but got {binary_mask.ndim}")
 
         if binary_mask.dtype != bool:
-            raise ValueError("Binary mask must be a binary image (dtype should be bool).")
+            raise ValueError(
+                "Binary mask must be a binary image (dtype should be bool)."
+            )
 
         skeleton = self._thin_and_skeletonize(binary_mask)
 
         # Convert the binary skeleton to a graph
-        graph = sknw.build_sknw(skeleton)
+        graph = sknw.build_sknw(skeleton, iso=False, ring=False)
 
         if prune:
-            # Remove nodes with degree less than MIN_NODE_DEGREE
+            # Remove nodes with degree less than min_node_degree
             remove = [
-                node for node, degree in graph.degree() if degree < MIN_NODE_DEGREE
+                node for node, degree in graph.degree() if degree < min_node_degree
             ]
             graph.remove_nodes_from(remove)
 
