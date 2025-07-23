@@ -32,6 +32,9 @@ ray[default]
 ray[tune] 
 ray[train]
 ruff
+ipykernel
+jupyter
+radon
 
 # configuration / modeling
 pydantic==1.10.4
