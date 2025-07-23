@@ -23,14 +23,14 @@ Here, we adopt a multi-step, multi-resolution approach to the segmentation probl
 ### Network Architecture
 We start with compact, multi-head U-Nets (~ 80-200k parameters) whose heads share a single encoder-decoder, targeting coarse morphological features. Training uses padded, down-sampled images (512x512 or 1024x1024).
 
-<p align="center"><img src="../../assets/UNet_Lite.png" alt="U-Net Lite" style="width: 100%; max-width: 350px; border-radius: 0px;"><br>Highly compact **ModularHopperNet** used in preprocessing
+<p align="center"><img src="../../assets/UNet_Lite.png" alt="U-Net Lite" style="width: 100%; max-width: 400px; border-radius: 0px;"><br>Highly compact **ModularHopperNet** used in preprocessing
 </p>
 
 The configurable multi-head architecture provides flexibility to experiment with feature sets across species.
 
 The model is trained on manual segmentations of (1) wing outlines/areas, (2) spots, (3) pigmentation domains, and (4) venation networks in _L. delicatula_ tegmina. 
 
-<p align="center"><img src="../../assets/sample_record.png" alt="Sample Segmentations" style="width: 100%; max-width: 600px; border-radius: 0px;"></p>
+<p align="center"><img src="../../assets/sample_record.png" alt="sample segmentations" style="width: 100%; max-width: 600px; border-radius: 0px;"></p>
 
 
 The compact model provides the initial feature masks for preprocessing and dataset standardization.
