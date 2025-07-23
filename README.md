@@ -96,9 +96,11 @@ Local sources of _L. delicatula_ specimens include Morningside Heights, New York
 
 For a minimal demo of the segmentation model, see [notebooks/demo_pretrained_unet.ipynb](notebooks/demo_pretrained_unet.ipynb).
 
-We are actively building on the segmentation, image processing, and morphometry core modules to create standardized pipelines supporting the project's main research objectives.
+The core segmentation, image processing, and morphometry modules can be chained into standardized pipelines for object detection and morphometry.
 
 <p align="center"><img src="assets/spots_morphometry_pipeline.gif" alt="spots morphometry" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>A sample object detection and morphometry pipeline to study the spots pattern</p>
+
+<p align="center"><img src="assets/animated_network.gif" alt="network reconstruction" style="width: 100%; max-width: 500px; border-radius: 0px;"><br>A sample reconstruction pipeline for the ventation network</p>
 
 
 ## Status & Roadmap
