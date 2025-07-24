@@ -49,6 +49,33 @@ class SegmentationModelConfigs:
             "domains": 3,  # 2 + background
         }
     )
+
+    # to replace "out_channels" ultimately:
+    heads: Dict[str, Dict] = field(
+        default_factory=lambda: {
+            "wing": {
+                "channels": 1,
+                "type": "binary",
+                "color": [0.8, 0.0, 0.1],
+            },
+            "veins": {
+                "channels": 1,
+                "type": "binary",
+                "color": [0.5, 1.0, 0.5],
+            },
+            "spots": {
+                "channels": 1,
+                "type": "binary",
+                "color": [1.0, 0.5, 0.5],
+            },
+            "domains": {
+                "channels": 3,
+                "type": "multiclass",
+                "color": {1: [1.0, 0.52, 0.35], 2: [0, 0.5, 1.0]},
+            },
+        }
+    )
+
     num_groups: int = 8  # for GroupNorm
     upsample_mode: str = "bilinear"  # "bilinear" or "nearest"
 

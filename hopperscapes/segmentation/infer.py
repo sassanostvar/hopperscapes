@@ -191,7 +191,7 @@ def post_process_predictions(
         # single-class output
         elif logits.shape[1] == 1:
             probs = torch.sigmoid(logits.squeeze(0))
-            binary_mask = probs.squeeze().detach().numpy() > binary_threshold
+            binary_mask = probs.squeeze().detach().cpu().numpy() > binary_threshold
             processed_outputs[head_name] = binary_mask
 
     return processed_outputs
