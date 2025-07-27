@@ -165,12 +165,13 @@ class SoftDiceLoss(nn.Module):
         eps: Small value to avoid division by zero
     """
 
-    def __init__(self, eps: float = 1e-6):
+    def __init__(self, eps: float = 1e-6, num_classes: int = 1):
         super().__init__()
         self.eps = eps
+        self.num_classes = num_classes
 
     def forward(self, logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return soft_dice_loss(logits, target, self.eps)
+        return soft_dice_loss(logits, target, self.eps, self.num_classes)
 
 
 class SoftDiceLossWithGating(nn.Module):
