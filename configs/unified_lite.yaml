@@ -57,7 +57,7 @@ decoder_configs:
     mixer_out_channels: [16, 16]
 
 # Training configurations
-device: mps # cpu, cuda
+device: cpu # cpu, cuda, mps
 batch_size: 4
 valid_split: 0.1
 random_seed: 43
