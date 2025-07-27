@@ -122,19 +122,21 @@ class SegmentationModelConfigs:
     # -------------------------------
     # ------ TRAINING CONFIGS -------
     # -------------------------------
-    device: str = "cpu"
+    device: str = "cpu" # mps, cuda
     batch_size: int = 4
     valid_split: float = 0.2
     random_seed: int = 42
     num_workers: int = 4
     epochs: int = 200
-    learning_rate: float = 5e-5
+    learning_rate: float = 6e-5
     weight_decay: float = 0.0
     lr_scheduler: str = "cosine"
-    lr_scheduler_params: dict = field(default_factory=dict)
+    lr_scheduler_params: dict = field(default_factory=lambda: {"T_max": 300, "eta_min": 1e-6})
     warmup_epochs: int = 10
     warmup_lr: float = 1e-6
-    checkpoint_every: int = 10
+    enable_dynamic_freeze: bool = True
+    freeze_patience: int = 10 # epochs
+    checkpoint_every: int = 10 # epochs
     log_every: int = 1
     save_best: bool = True
     clip_gradients: bool = True

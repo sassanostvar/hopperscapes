@@ -1,4 +1,4 @@
-experiment_id: hopperscapes_demo
+experiment_id: temp_demo #hopperscapes_demo
 savedir: ./outputs/demo/models
 
 # Dataset configurations
@@ -57,18 +57,22 @@ decoder_configs:
     mixer_out_channels: [16, 16]
 
 # Training configurations
-device: cpu
+device: mps # cpu, cuda
 batch_size: 4
 valid_split: 0.1
 random_seed: 43
 num_workers: 4
 epochs: 300
-learning_rate: 5.0e-05
+learning_rate: 6.0e-05
 weight_decay: 0.0
-lr_scheduler: cosine
-lr_scheduler_params: {}
-warmup_epochs: 10
+lr_scheduler: null # cosine
+lr_scheduler_params:
+  T_max: 300
+  eta_min: 1e-6
+warmup_epochs: 20
 warmup_lr: 1.0e-06
+enable_dynamic_freeze: false
+freeze_patience: 15 # epochs
 checkpoint_every: 10
 log_every: 1
 save_best: true
@@ -82,10 +86,10 @@ total_loss_weights:
   spots: 1.0
   domains: 1.0
 dice_thresholds_to_freeze_heads:
-  wing: 1.0
-  veins: 0.95
+  wing: 0.75
+  veins: 0.9
   spots: 0.95
-  domains: 0.95
+  domains: 1.
 loss_function_configs:
   wing:
     bce:
@@ -117,11 +121,15 @@ loss_function_configs:
       params: {}
   domains:
     ce:
-      weight: 1.0
+      weight: 0.5
       params: {}
+    soft_dice:
+      weight: 0.5
+      params:
+        num_classes: 3
 freeze_heads:
   wing: false
-  veins: false
+  veins: true
   spots: false
   domains: false
 dice_scores_to_track:
